@@ -329,7 +329,7 @@ const CHAMPS = {
     return h;
   },
   darius(Up) {
-    const iron = metal(0x3b3f4a, .4), red = cloth(0x8c1b1b, 1), steel = metal(0x9aa0ab, .3), gold = gld(Up), leather = M(0x2a1a14, { r: .7 });
+    const iron = metal(0x596070, .38), red = cloth(0x9a1e1e, 1), steel = metal(0x9aa0ab, .3), gold = gld(Up), leather = M(0x2a1a14, { r: .7 });
     const h = humanoid({ bulk: 1.32, head: .98, skin: 0xd2a07c, topM: iron, sleeveM: cloth(0x5a1212), foreM: iron, handM: leather, thighM: cloth(0x221418), shinM: iron, bootM: iron, beltM: M(0x6a5a3a, { m: .8, r: .35 }), hipM: cloth(0x221418) });
     const r = h.rig, hs = r.hs;
     P(r.torso, U.sph, steel, [0, .32, .05], [.25, .19, .13]);
@@ -349,11 +349,11 @@ const CHAMPS = {
     P(ax, merged('darWrap', () => [0, 1, 2].map(i => X(U.cyl, [0, 0, -.15 + i * .28], [PI / 2, 0, 0], [.05, .06, .05]))), red);
     P(ax, U.cone, steel, [0, 0, -.6], [.05, .14, .05], [-PI / 2, 0, 0]);
     const bladeG = ext('darBlade', s => { s.moveTo(-.02, .95); s.lineTo(.18, .9); s.quadraticCurveTo(.45, .78, .68, .5); s.quadraticCurveTo(.9, 1.2, .7, 1.9); s.quadraticCurveTo(.45, 1.62, .18, 1.55); s.lineTo(-.02, 1.5); s.lineTo(-.02, .95); }, .05, .02);
-    P(ax, bladeG, metal(0x5d6370, .32));
+    P(ax, bladeG, metal(0x8a919e, .3));
     P(ax, ext('darEdge', s => { s.moveTo(.58, .52); s.quadraticCurveTo(.85, 1.2, .62, 1.85); s.quadraticCurveTo(.8, 1.2, .66, .53); }, .06, .006), Up ? glow(0xff3a2a, 2.5) : metal(0xd8dde6, .18));
-    P(ax, ext('darBack', s => { s.moveTo(0, 1.05); s.lineTo(-.4, 1.2); s.lineTo(0, 1.42); }, .06, .015), metal(0x5d6370, .32));
+    P(ax, ext('darBack', s => { s.moveTo(0, 1.05); s.lineTo(-.4, 1.2); s.lineTo(0, 1.42); }, .06, .015), metal(0x8a919e, .3));
     P(ax, U.cone, steel, [0, 0, 1.68], [.05, .25, .05], [PI / 2, 0, 0]);
-    r.weapon = ax; r.armR.rotation.set(-.15, 0, .3); r.foreR.rotation.x = -1.0; ax.rotation.set(-.42, 0, 0);
+    r.weapon = ax; r.armR.rotation.set(-.15, 0, .3); r.foreR.rotation.x = -1.0; ax.rotation.set(-.42, 0, 0); ax.scale.setScalar(.8); ax.position.z = -.12;
     r.style = 'swing'; r.holdR = true; r.theme = 0xff3a2a;
     return h;
   },
@@ -364,20 +364,22 @@ const CHAMPS = {
     P(r.torso, U.sph, dark, [0, .33, .025], [.215, .11, .155]);
     P(r.torso, merged('jinxAmmo', () => [-2, -1, 0, 1, 2].map(i => X(U.cyl, [Math.sin(i * .35) * .2, -.01, Math.cos(i * .35) * .15], [PI / 2, i * .35, 0], [.02, .06, .02]))), gld(Up));
     hairCap(r, blueH, { tilt: -.5 }); bangs(r, blueH, 6, { len: .17, spread: 1.05 });
-    const braidPts = sx => [[sx * .17, .32, -.12], [sx * .3, .16, -.2], [sx * .33, -.2, -.26], [sx * .3, -.65, -.32], [sx * .26, -1.05, -.44], [sx * .2, -1.3, -.66], [sx * .14, -1.38, -.95]];
-    r.braids = [-1, 1].map(sx => { const bg = grp(r.head, 0, 0, 0); P(bg, tube('jinxbraid' + sx, braidPts(sx), taper(.07, .025, .28, 46), 46, 7), blueH); P(bg, U.sph, pink, [sx * .14, -1.38, -.95], .035); return bg; });
+    const braidPts = sx => [[sx * .19, .33, -.1], [sx * .34, .2, -.16], [sx * .42, -.15, -.22], [sx * .44, -.6, -.28], [sx * .4, -1.0, -.38], [sx * .32, -1.28, -.6], [sx * .24, -1.38, -.9]];
+    r.braids = [-1, 1].map(sx => { const bg = grp(r.head, 0, 0, 0); P(bg, tube('jinxbraid' + sx, braidPts(sx), taper(.085, .03, .3, 46), 46, 7), blueH); P(bg, U.sph, pink, [sx * .24, -1.38, -.9], .04); return bg; });
     // Fishbones
-    const lz = grp(r.torso, .4, .2, .02); r.launcher = lz;
-    const fbM = M(0x5d7d9c, { m: .45, r: .45 }), teeth = M(0xf4f0e6, { r: .4 });
-    P(lz, lathe('fishbody', [[.02, -.62], [.12, -.52], [.18, -.2], [.2, .15], [.22, .38], [.24, .45]]), fbM, [0, 0, .05], 1, [PI / 2, 0, 0]);
-    P(lz, U.sph, M(0x1a0f18, { r: .9 }), [0, 0, .44], [.2, .2, .08]);
-    P(lz, merged('fishTeeth', () => { const o = []; for (let i = 0; i < 12; i++) { const a = (i / 12) * TAU; o.push(X(U.cone, [Math.cos(a) * .2, Math.sin(a) * .2, .5], [0, 0, a - PI / 2], [.035, .11, .03])); } return o.map(gm => gm); }), teeth);
-    P(lz, merged('fishFins', () => [X(U.pyr, [0, .24, -.05], [-.5, 0, 0], [.03, .26, .14]), X(U.pyr, [.17, -.1, -.4], [0, 0, -2.2], [.02, .2, .1]), X(U.pyr, [-.17, -.1, -.4], [0, 0, 2.2], [.02, .2, .1]), X(U.pyr, [0, .12, -.6], [-1.1, 0, 0], [.02, .22, .12])]), fbM);
-    P(lz, merged('fishEyes', () => [-1, 1].map(sx => X(U.sph, [sx * .17, .08, .3], [0, 0, 0], .04))), glow(0xff3a6a, 3));
-    P(lz, merged('fishPaint', () => [X(U.ring, [0, 0, .1], [0, 0, 0], [.205, .205, 1.2]), X(U.ring, [0, 0, -.1], [0, 0, 0], [.19, .19, 1.2])]), pink);
+    const lz = grp(r.torso, .42, .17, .06); r.launcher = lz;
+    const fbM = M(0x5d7d9c, { m: .45, r: .45 }), teeth = M(0xf4f0e6, { r: .4 }), maw = M(0x3a0a18, { r: .8 });
+    P(lz, lathe('fishbody', [[.02, -.72], [.11, -.6], [.18, -.3], [.21, 0], [.2, .22], [.15, .36]]), fbM, [0, 0, 0], 1, [PI / 2, 0, 0]);
+    P(lz, U.sph, fbM, [0, .07, .4], [.19, .11, .2]);
+    P(lz, U.sph, fbM, [0, -.11, .38], [.16, .06, .18]);
+    P(lz, U.sph, maw, [0, -.02, .42], [.15, .08, .15]);
+    P(lz, merged('fishTeeth2', () => { const o = []; for (let i = 0; i < 9; i++) { const a = (i / 8 - .5) * 2.4; o.push(X(U.cone, [Math.sin(a) * .16, .0, .42 + Math.cos(a) * .14], [PI, 0, 0], [.022, .08, .022])); o.push(X(U.cone, [Math.sin(a) * .13, -.07, .41 + Math.cos(a) * .12], [0, 0, 0], [.02, .065, .02])); } return o; }), teeth);
+    P(lz, merged('fishFins', () => [X(U.pyr, [0, .24, -.1], [-.6, 0, 0], [.03, .3, .16]), X(U.pyr, [.18, -.12, -.45], [0, 0, -2.2], [.02, .22, .1]), X(U.pyr, [-.18, -.12, -.45], [0, 0, 2.2], [.02, .22, .1]), X(U.pyr, [0, .14, -.72], [-1.1, 0, 0], [.025, .26, .14]), X(U.pyr, [0, -.1, -.72], [-2.0, 0, 0], [.025, .2, .12])]), fbM);
+    P(lz, merged('fishEyes', () => [-1, 1].map(sx => X(U.sph, [sx * .17, .1, .3], [0, 0, 0], .042))), glow(0xff3a6a, 3));
+    P(lz, merged('fishPaint', () => [X(U.ring, [0, 0, .05], [0, 0, 0], [.212, .212, 1.4]), X(U.ring, [0, 0, -.15], [0, 0, 0], [.2, .2, 1.4]), X(U.pyr, [0, .2, .15], [0, 0, 0], [.04, .12, .04])]), pink);
     if (Up) P(lz, U.sph, M(0xff4fa3, { e: 2, ec: 0xff4fa3, t: .4, add: 1 }), [0, 0, .45], .16);
     r.weapon = lz;
-    r.armR.rotation.set(-.35, 0, .3); r.foreR.rotation.x = -.9; r.armL.rotation.set(-.9, -.3, -.1); r.foreL.rotation.x = -.7;
+    r.armR.rotation.set(-.3, 0, .35); r.foreR.rotation.x = -1.0; r.armL.rotation.set(-.6, -.5, .1); r.foreL.rotation.x = -1.2;
     r.holdR = r.holdL = true; r.theme = 0xff4fa3;
     return h;
   },
@@ -851,8 +853,8 @@ function drake(o) {
   P(torso, merged('drkDorsal' + E, () => { const o2 = []; for (let i = 0; i < 6; i++) o2.push(X(E === 'm' ? U.dod : U.cone, [0, .42 - Math.abs(i - 2) * .02, .55 - i * .24], [-.5, 0, 0], E === 'm' ? [.12, .1, .14] : [.07, .26 - i * .025, .07])); return o2; }), E === 'i' || E === 'e' ? M(o.horn, { r: .4, e: 1.2, ec: o.glow }) : horn);
   // cuello segmentado
   const neck = []; let par = torso; const nrot = [1.05, -.28, -.32, -.3];
-  for (let i = 0; i < 4; i++) { const n = grp(par, 0, i === 0 ? .15 : .24, i === 0 ? .6 : 0); n.rotation.x = nrot[i]; P(n, U.sph, skin, [0, .13, 0], [.2 - i * .015, .2, .18 - i * .01]); P(n, U.cone, horn, [0, .16, -.16], [.035, .14, .035], [-1.3, 0, 0]); neck.push(n); par = n; }
-  const head = grp(par, 0, .26, .02); head.rotation.x = .35;
+  for (let i = 0; i < 4; i++) { const n = grp(par, 0, i === 0 ? .15 : .2, i === 0 ? .6 : 0); n.rotation.x = nrot[i]; P(n, U.sph, skin, [0, .1, 0], [.2 - i * .016, .17, .18 - i * .012]); P(n, U.cone, horn, [0, .16, -.16], [.035, .14, .035], [-1.3, 0, 0]); neck.push(n); par = n; }
+  const head = grp(par, 0, .22, .02); head.rotation.x = .35;
   P(head, U.sph, skin, [0, .04, 0], [.22, .18, .25]);
   P(head, U.sph, skin, [0, 0, .3], [.14, .1, .25]);
   P(head, merged('drkBrow', () => [-1, 1].map(sx => X(U.sph, [sx * .12, .12, .12], [0, 0, sx * .3], [.08, .04, .14]))), dark);
@@ -866,7 +868,7 @@ function drake(o) {
   if (E === 'i') P(head, merged('drkNostril', () => [-1, 1].map(sx => X(U.sph, [sx * .05, .05, .52], [0, 0, 0], .025))), glow(0xffa030, 3));
   // cola de 6 segmentos
   const tail = []; par = torso; const trot = [-.18, .05, .08, .1, .1, .1];
-  for (let i = 0; i < 6; i++) { const t = grp(par, 0, i === 0 ? -.02 : 0, i === 0 ? -.7 : -.3); t.rotation.x = trot[i]; const rr = .22 - i * .03; P(t, U.sph, skin, [0, 0, -.15], [rr, rr * .9, .22]); tail.push(t); par = t; }
+  for (let i = 0; i < 6; i++) { const t = grp(par, 0, i === 0 ? -.02 : 0, i === 0 ? -.68 : -.25); t.rotation.x = trot[i]; const rr = .23 - i * .032; P(t, U.sph, skin, [0, 0, -.12], [rr, rr * .88, .2]); tail.push(t); par = t; }
   if (E === 'i') { P(par, U.cone, glow(0xff7a1a, 2.5), [0, 0, -.45], [.12, .45, .12], [-PI / 2, 0, 0]); P(par, U.cone, M(0xffc040, { e: 2, ec: 0xffa020, t: .5, add: 1 }), [0, 0, -.5], [.18, .55, .18], [-PI / 2, 0, 0]); }
   else if (E === 'm') P(par, merged('drkClub', () => [X(U.dod, [0, 0, -.3], [0, 0, 0], .2), X(U.dod, [.1, .1, -.42], [.5, 0, 0], .12), X(U.dod, [-.1, .08, -.38], [0, .5, 0], .12)]), M(0x8a7a62, { r: .9, fs: 1 }));
   else if (E === 'o') P(par, ext('flukes', s => { s.moveTo(0, 0); s.quadraticCurveTo(.3, -.1, .45, -.35); s.quadraticCurveTo(.2, -.25, 0, -.3); s.quadraticCurveTo(-.2, -.25, -.45, -.35); s.quadraticCurveTo(-.3, -.1, 0, 0); }, .02, .01), M(0x4fd8d0, { r: .5, e: .3, ec: 0x4fd8d0 }), [0, 0, -.25], 1, [0, 0, 0]);
@@ -877,8 +879,8 @@ function drake(o) {
   const legs = [];
   for (const [sx, fz, big] of [[-1, -.32, 1], [1, -.32, 1], [-1, .42, 0], [1, .42, 0]]) {
     const l = grp(torso, sx * (big ? .32 : .26), -.15, fz); l.rotation.x = big ? .5 : .2;
-    if (big) P(l, U.sph, skin, [0, -.12, 0], [.15, .25, .2]); else P(l, limb(.08, .06, .2), skin);
-    const k = grp(l, 0, big ? -.32 : -.26, 0); k.rotation.x = big ? -.9 : -.5; P(k, limb(big ? .08 : .06, .05, big ? .26 : .18), skin);
+    if (big) P(l, U.sph, skin, [0, -.12, 0], [.18, .28, .23]); else P(l, limb(.09, .07, .2), skin);
+    const k = grp(l, 0, big ? -.32 : -.26, 0); k.rotation.x = big ? -.9 : -.5; P(k, limb(big ? .1 : .07, .06, big ? .26 : .18), skin);
     const ft = grp(k, 0, big ? -.32 : -.24, 0); ft.rotation.x = .5;
     P(ft, merged('drkClaw' + big, () => [-1, 0, 1].map(i => X(U.cone, [i * .05, -.02, .08], [PI / 2 + .3, i * .35, 0], [.022, big ? .16 : .12, .022]))), horn);
     l.userData.knee = k; legs.push(l);
@@ -887,11 +889,11 @@ function drake(o) {
   const wings = [];
   for (const sx of [-1, 1]) {
     const wg = grp(torso, sx * .25, .3, .25); wg.scale.x = sx;
-    const sh = grp(wg); sh.rotation.set(0, .25, .35);
-    const L1 = .75;
-    P(sh, XAB(U.tcyl, [0, 0, 0], [L1, .03, .02], .055, .055), skin);
+    const sh = grp(wg); sh.rotation.set(0, .3, .28);
+    const L1 = .85;
+    P(sh, XAB(U.tcyl, [0, 0, 0], [L1, .03, .02], .07, .07), skin);
     P(sh, wingInG(L1), memb);
-    const el = grp(sh, L1, .03, .02); el.rotation.set(0, -.15, -.35);
+    const el = grp(sh, L1, .03, .02); el.rotation.set(0, -.2, -.3); el.scale.setScalar(1.25);
     P(el, merged('wingBones', () => [XAB(U.tcyl, [0, 0, 0], [WTIPS[0][0], 0, WTIPS[0][1]], .04), ...WTIPS.slice(1).map(([x, z]) => XAB(U.tcyl, [0, 0, 0], [x, -Math.hypot(x, z) * .05, z], .025))]), skin);
     P(el, wingOutG(), memb);
     P(el, U.cone, horn, [0, .06, .02], [.03, .14, .03], [0, 0, 0]);
@@ -1056,7 +1058,7 @@ function animDrake(m, r, st, t, w, ph) {
   const flap = Math.sin(f);
   SP(r.body, 0, .3 + Math.sin(f + PI * .5) * .07 + Math.sin(t * 1.1 + m.phase) * .06, a >= 0 ? kf(a, 0, [[0, 0], [.35, -.1], [.55, .25], [1, 0]]) : 0);
   S(r.body, .08 * w + (a >= 0 ? kf(a, 0, [[0, 0], [.35, -.12], [.55, .12], [1, 0]]) : 0), 0, Math.sin(t * 1.3 + m.phase) * .04);
-  r.wings.forEach(({ sh, el }) => { S(sh, 0, Math.sin(f - .4) * .12, flap * .62); S(el, 0, 0, Math.sin(f - 1.0) * .55); });
+  r.wings.forEach(({ sh, el }) => { S(sh, 0, Math.sin(f - .4) * .1, flap * .5); S(el, 0, 0, Math.sin(f - 1.0) * .45); });
   r.neck.forEach((n, i) => S(n, Math.sin(t * 2 + i * .7 + m.phase) * .05 + (a >= 0 ? kf(a, 0, [[0, 0], [.35, -.18], [.55, .2], [1, 0]]) : 0) - hurt * .1));
   S(r.head, (a >= 0 ? kf(a, 0, [[0, 0], [.35, -.3], [.55, .25], [1, 0]]) : Math.sin(t * 1.7 + m.phase) * .06) - hurt * .3, Math.sin(t * .9 + m.phase) * .15);
   S(r.jaw, a >= 0 ? kf(a, 0, [[0, 0], [.35, .2], [.5, .7], [.8, .3], [1, 0]]) : .05 + Math.max(0, Math.sin(t * .8)) * .1);

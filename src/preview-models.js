@@ -11,7 +11,7 @@ const SETS = {
   drakes: ['drake_c', 'drake_i', 'drake_m', 'drake_o', 'elder', 'baron'],
 };
 const kinds = q.get('k') ? q.get('k').split(',') : SETS[q.get('set') || 'champs'];
-const up = q.get('up') === '1', anim = q.get('anim') || 'idle', T = +(q.get('t') ?? .4), yaw = +(q.get('yaw') ?? -.45), pitch = +(q.get('pitch') ?? .18);
+const up = q.get('up') === '1', anim = q.get('anim') || 'idle', T = +(q.get('t') ?? .4), yaw = +(q.get('yaw') ?? -.45), pitch = +(q.get("pitch") ?? .5);
 const W = innerWidth, H = innerHeight, n = kinds.length;
 const cols = +(q.get('cols') || Math.ceil(Math.sqrt(n * W / H))), rows = Math.ceil(n / cols);
 const renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setSize(W, H); renderer.setPixelRatio(1);
