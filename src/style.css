@@ -115,3 +115,11 @@ kbd { display:inline-block; font:600 10px monospace; padding:1px 5px; margin-lef
 #spellModal h3 { margin:0; font:700 20px Georgia,serif; color:#c8aa6e; letter-spacing:3px; text-transform:uppercase; } #spellModal > p { font-size:13px; color:#cfe0f5; }
 #spellModal .sp { display:flex; gap:12px; } .spc { flex:1; padding:10px; background:#0a1426; border:1px solid #4a3e22; cursor:pointer; transition:transform .15s; } .spc:hover, .spc.on { border-color:#c8aa6e; transform:translateY(-4px); background:#122440; }
 .spc .ic { font-size:34px; } .spc b { display:block; font:700 15px Georgia,serif; color:#fff; } .spc small { color:#8fa6c4; font-size:10px; text-transform:uppercase; letter-spacing:1px; } .spc p { font-size:12px; color:#cfe0f5; margin:6px 0 0; }
+.ipanel { position:absolute; padding:8px 10px 10px; background:rgba(40,52,62,.92); border:1px solid #5a6a74; box-shadow:0 6px 20px #000a; font-size:12px; z-index:12; }
+.ipanel h5 { margin:0 0 6px; font:600 14px 'Segoe UI',Arial; color:#fff; }
+#pTypes { top:120px; left:280px; } #pWaves { right:240px; bottom:140px; min-width:330px; } #pDmg { right:240px; top:120px; width:240px; }
+.mtx { border-collapse:collapse; } .mtx th { font-size:10px; padding:2px 6px; font-weight:600; } .mtx td { text-align:center; padding:3px 6px; font-weight:700; }
+.mtx td.pos { background:#2e7a2e; color:#e8ffe0; } .mtx td.neg { background:#8a2a22; color:#ffe0dc; } .mtx td.neu { background:#3a4a54; color:#cfd8e0; }
+.wt { border-collapse:collapse; width:100%; } .wt th { color:#ffd25a; font-size:11px; text-align:left; padding:2px 4px; } .wt td { padding:3px 4px; border-top:1px solid #4a5a64; } .wt tr.cur td { background:rgba(255,210,90,.12); }
+.wt .ics { display:flex; gap:2px; } .wt .ci { width:26px; height:26px; display:inline-block; background:#08101e center/cover; border:1px solid #6a5a34; }
+.dr { position:relative; display:flex; justify-content:space-between; padding:3px 6px; margin-bottom:3px; background:#1a2430; overflow:hidden; } .dr span, .dr b { position:relative; z-index:1; } .dr i { position:absolute; left:0; top:0; bottom:0; background:rgba(60,170,255,.35); } .dr.t1 i { background:rgba(255,80,60,.35); }

@@ -1,6 +1,6 @@
 import { MERCS, CREEPS, WAVES, CFG, GRID, DIFFS, waveScale } from './data.js';
 import { FBY } from './sim.js';
-import { DMG, ARM, LEGION_BY } from './content/index.js';
+import { DMG, ARM, MATRIX, LEGION_BY } from './content/index.js';
 import { SPELL_BY } from './content/spells.js';
 import { STRAT_BY } from './content/mastermind.js';
 import { setMuted } from './sfx.js';
@@ -19,6 +19,10 @@ export class UI {
     $('bMute').onclick = () => { this.muted = !this.muted; setMuted(this.muted); $('bMute').textContent = this.muted ? 'Sonido: OFF' : 'Sonido'; };
     $('bReady').onclick = () => game.toggleReady();
     $('bPoro').onclick = () => game.buyWorker();
+    const tg = id => { $(id).classList.toggle('hidden'); this._pw = null; this.refresh(); };
+    $('bPanels').onclick = () => { const any = ['pWaves', 'pDmg', 'pTypes'].some(i => !$(i).classList.contains('hidden')); ['pWaves', 'pDmg', 'pTypes'].forEach(i => $(i).classList.toggle('hidden', any)); this._pw = null; this.refresh(); };
+    addEventListener('keydown', e => { if (!game.started || e.target.tagName === 'INPUT') return; if (e.code === 'KeyO') tg('pWaves'); if (e.code === 'KeyG') tg('pDmg'); if (e.code === 'KeyT') tg('pTypes'); });
+    $('pTypes').innerHTML = this.typesTable();
     $('bQuit').onclick = () => this.onQuit && this.onQuit(false);
     $('eAgain').onclick = () => this.onQuit && this.onQuit(true);
     document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => { document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b)); $('tabMercs').classList.toggle('hidden', b.dataset.tab !== 'mercs'); $('tabNexus').classList.toggle('hidden', b.dataset.tab !== 'nexus'); });
@@ -77,6 +81,18 @@ export class UI {
     $('eStats').innerHTML = `Oleada alcanzada: <b>${Math.min(sim.wave + 1, 20)}</b> / 20<br>Monstruos eliminados: <b>${p.kills}</b><br>Nexo azul: <b>${Math.round(T[0].hp)}</b> · Nexo rojo: <b>${Math.round(T[1].hp)}</b>` + (extra.html || '');
   }
   setEndExtra(html) { $('eStats').insertAdjacentHTML('beforeend', html); }
+  typesTable() {
+    const A = Object.keys(ARM), Dk = Object.keys(DMG), pc = v => { const d = Math.round((v - 1) * 100); return `<td class="${d > 0 ? 'pos' : d < 0 ? 'neg' : 'neu'}">${d > 0 ? '+' : ''}${d}%</td>`; };
+    return `<h5>Tipos de daño y armadura</h5><table class="mtx"><tr><th></th>${A.map(a => `<th style="color:${ARM[a].color}">${ARM[a].icon}<br>${ARM[a].name}</th>`).join('')}</tr>${Dk.map(d => `<tr><th style="color:${DMG[d].color}">${DMG[d].icon} ${DMG[d].name}</th>${A.map(a => pc(MATRIX[d][a])).join('')}</tr>`).join('')}</table>`;
+  }
+  panels(sim) {
+    if (!$('pWaves').classList.contains('hidden') && this._pw !== sim.wave) { this._pw = sim.wave;
+      const rows = []; for (let w = sim.wave; w < Math.min(WAVES.length, sim.wave + 6); w++) { const W = WAVES[w]; const cs = W.g.map(x => CREEPS[x.c]);
+        rows.push(`<tr class="${w === sim.wave ? 'cur' : ''}"><td>${w + 1}</td><td class="ics">${W.g.map(x => `<span class="ci" title="${CREEPS[x.c].name} ×${x.n}" ${this.img(x.c)}></span>`).join('')}</td><td>${[...new Set(cs.map(c => c.dmgType))].map(d => `<span style="color:${DMG[d].color}" title="${DMG[d].name}">${DMG[d].icon}</span>`).join('')} ${[...new Set(cs.map(c => c.armorType))].map(a => `<span style="color:${ARM[a].color}" title="${ARM[a].name}">${ARM[a].icon}</span>`).join('')}</td><td>${sim.recValue(w)}</td></tr>`); }
+      $('pWaves').innerHTML = `<h5>Detalles de oleada</h5><table class="wt"><tr><th>#</th><th>Monstruos</th><th>Tipos</th><th>Valor rec.</th></tr>${rows.join('')}</table>`; }
+    if (!$('pDmg').classList.contains('hidden')) { const mx = Math.max(1, ...sim.players.map(q => q.dealt || 0));
+      $('pDmg').innerHTML = `<h5>Daño infligido</h5>` + sim.players.map(q => `<div class="dr t${q.team}"><span>${q.name}</span><b>${((q.dealt || 0) / 1000).toFixed(1)}k</b><i style="width:${(q.dealt || 0) / mx * 100}%"></i></div>`).join(''); }
+  }
   spellModal(p, build) {
     let m = $('spellModal'); const g = this.game;
     if (!p.spellOffer || !build) { if (m) m.remove(); return; }
@@ -104,7 +120,7 @@ export class UI {
     if (this._pk !== pk) { this._pk = pk; $('players').innerHTML = sim.players.map(q => `<div class="pc t${q.team} ${q.side === me ? 'me' : ''} ${q.side === g.cam.view ? 'view' : ''}"><b>${q.side === me ? '★ ' : ''}${q.name}${q.bot && !g.local ? ' 🤖' : ''}</b>⚔ ${sim.value(q.side)} · ☻ ${q.workers} · ${build ? (q.ready ? '<span class="rd">LISTO</span>' : '<span class="nr">construyendo</span>') : ''}</div>`).join(''); }
     this.buildShop(); document.querySelectorAll('.uc').forEach(el => { const f = FBY[el.dataset.id]; if (!f) return; el.classList.toggle('sel', g.sel === f.id); el.classList.toggle('dis', p.gold < f.cost || !build); });
     const sx = $('shopx'); if (sx) { const L = p.legion === 'invocador' ? { name: 'Invocador' + (p.strategy ? ' · ' + STRAT_BY[p.strategy].name : '') } : LEGION_BY[p.legion]; const k = [p.legion, p.rerolls, Math.round(p.piggy), build].join(); if (sx.dataset.k !== k) { sx.dataset.k = k; sx.innerHTML = `<div class="lgn">${L ? L.name : ''}</div>` + (p.legion === 'invocador' && p.rerolls > 0 ? `<button id="bReroll">🔄 Nueva tirada (${p.rerolls})</button>` : '') + (p.piggy ? `<button id="bPiggy">🐷 Romper hucha (${Math.round(p.piggy)})</button>` : ''); const br = $('bReroll'); if (br) br.onclick = () => g.reroll(); const bp = $('bPiggy'); if (bp) bp.onclick = () => g.breakPiggy(); } }
-    this.spellModal(p, build);
+    this.spellModal(p, build); this.panels(sim);
     $('mercTarget').textContent = `Destino: línea de ${sim.P(sim.target(me)).name}`;
     document.querySelectorAll('.mc').forEach(el => { const m = MERCS.find(x => x.id === el.dataset.id); el.classList.toggle('dis', p.myth < m.cost || !build); const n = p.queue.filter(x => x && x.id === m.id).length; const qq = el.querySelector('.q'); qq.textContent = n ? '×' + n : ''; qq.style.display = n ? 'block' : 'none'; });
     document.querySelectorAll('.nu').forEach(el => { const k = el.dataset.k, T = sim.T(me), lv = T.upg ? T.upg[k] : 0, c = sim.nexusCost(me, k); el.querySelector('.lv').textContent = `nv.${lv}/5`; el.querySelector('.cost').textContent = lv >= 5 ? 'MÁX' : c; el.classList.toggle('dis', lv >= 5 || p.myth < c); });

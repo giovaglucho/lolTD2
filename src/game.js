@@ -46,7 +46,8 @@ export class Game {
     } else {
       const n = opts.lanes === 4 ? 4 : 2; this.makeWorld(n); this.me = 0; this.netInfo = null; this.local = true;
       const diff = opts.diff || 'normal', names = n === 4 ? ['Tú', 'Aliado IA', 'IA Roja 1', 'IA Roja 2'] : ['Tú', 'IA Roja'];
-      this.sim = new Sim({ lanes: n, players: names.map((nm, i) => ({ name: nm, bot: i !== 0, diff: n === 4 && i === 1 ? (opts.allyDiff || diff) : diff })) });
+      const legs = [opts.legion || 'random', ...(n === 4 ? [opts.allyLegion || 'random'] : []), ...(opts.enemyLegions || [])];
+      this.sim = new Sim({ lanes: n, players: names.map((nm, i) => ({ name: nm, bot: i !== 0, diff: n === 4 && i === 1 ? (opts.allyDiff || diff) : diff, legion: legs[i] || 'random', strategy: i === 0 ? opts.strategy : undefined })) });
       this.aiLast = -1;
     }
     this.mode = opts; this.started = true; this.sel = null; this.selEnt = null; this.over = false;

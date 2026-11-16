@@ -42,7 +42,7 @@ function boot() {
   $('bLocal').onclick = () => { initAudio(); name(); game.start({ lanes: sel.lanes, diff: sel.diff }); };
   $('bClassic').onclick = () => online('classic');
   $('bRanked').onclick = () => online('ranked');
-  if (params.get('auto')) game.start({ lanes: +params.get('lanes') || 2, diff: params.get('diff') || 'normal' });
+  if (params.get('auto')) game.start({ lanes: +params.get('lanes') || 2, diff: params.get('diff') || 'normal', legion: params.get('legion') || 'random' });
   let last = performance.now();
   const loop = now => { const dt = (now - last) / 1000; last = now; game.frame(dt); requestAnimationFrame(loop); };
   requestAnimationFrame(loop);

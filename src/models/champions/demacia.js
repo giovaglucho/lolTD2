@@ -367,13 +367,13 @@ export const MODELS = {
 
   // ═════════════════════ VAYNE ═════════════════════
   vayne(Up) {
-    const coatC = Up ? 0xe8edf4 : 0x1a1820, coat = M(coatC, { r: Up ? .4 : .55, m: Up ? .4 : .2 }), red = Up ? glow(0x7fe8ff, 2) : M(0x8a1424, { r: .5 });
+    const coatC = Up ? 0xe8edf4 : 0x1a1820, coatV = M(coatC, { r: Up ? .4 : .55, m: Up ? .4 : .2 }), red = Up ? glow(0x7fe8ff, 2) : M(0x8a1424, { r: .5 });
     const silver = metal(Up ? 0xf4f8ff : 0xb8c0cc, .25), leather = M(Up ? 0x8a9aae : 0x2a2028, { r: .6 }), skinC = 0xf2d2bc, skin = M(skinC, { r: .62 });
-    const h = humanoid({ bulk: .86, head: 1.03, leg: 1.05, skin: skinC, topM: coat, sleeveM: coat, foreM: leather, handM: leather, thighM: M(Up ? 0x6a7a90 : 0x24202a, { r: .7 }), shinM: coat, bootM: coat, beltM: silver, hipM: leather, style: 'gun' });
+    const h = humanoid({ bulk: .86, head: 1.03, leg: 1.05, skin: skinC, topM: coatV, sleeveM: coatV, foreM: leather, handM: leather, thighM: M(Up ? 0x6a7a90 : 0x24202a, { r: .7 }), shinM: coatV, bootM: coatV, beltM: silver, hipM: leather, style: 'gun' });
     const r = h.rig, hs = r.hs;
     P(r.torso, merged('dmVayTrim', () => [X(U.ring, [0, .44, 0], [PI / 2, 0, 0], [.17, .14, 1.4]), ...[-1, 1].map(sx => X(U.box, [sx * .07, .26, .15], [0, 0, sx * .2], [.02, .3, .02])), X(U.oct, [0, .34, .16], [0, 0, 0], [.04, .06, .02])]), Up ? silver : red);
-    P(r.torso, lathe('dmVayCollar', [[.13, 0], [.17, .1], [.2, .2]]), coat, [0, .42, -.02]);
-    pauldron(r.armL, -1, coat, silver, .18, .12, { tilt: .4 }); pauldron(r.armR, 1, coat, silver, .18, .12, { tilt: .4 });
+    P(r.torso, lathe('dmVayCollar', [[.13, 0], [.17, .1], [.2, .2]]), coatV, [0, .42, -.02]);
+    pauldron(r.armL, -1, coatV, silver, .18, .12, { tilt: .4 }); pauldron(r.armR, 1, coatV, silver, .18, .12, { tilt: .4 });
     coat(r, M(coatC, { r: .55, ds: 1 }), { l: .78, rT: .2, rB: .36, arc: 3.6, trim: Up ? glow(0x7fe8ff, 1.5) : M(0x8a1424, { r: .5 }) });
     // pelo oscuro con coleta alta y gafas rojas
     const hk = hairM(Up ? 0xf2f6ff : 0x2a1c2a); hairCap(r, hk, { tilt: -.5 }); bangs(r, hk, 6, { len: .15 });

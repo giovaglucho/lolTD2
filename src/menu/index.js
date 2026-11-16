@@ -2,7 +2,7 @@
 // API pública (ver contrato en el encargo):
 //   mountMenu(api) · showMenu() · hideMenu() · showLoading(info) → Promise · showResult(res) → Promise · openView(name, opts) · store
 import './menu.css';
-import { ctx, h, click, hydrate, avatarHTML, guildTag, titleName, pimg, toast, modal } from './ui.js';
+import { ctx, h, click, hydrate, avatarHTML, avatarKey, guildTag, titleName, pimg, toast, modal } from './ui.js';
 import { getProfile, levelFromXp, onStoreChange } from './store.js';
 import { rankOf, esc, fmt } from './data.js';
 import { UI } from './icons.js';
@@ -101,11 +101,10 @@ function refreshSide() {
   me.style.cssText = `--rk1:${rk.c1};--rk2:${rk.c2}`;
   me.innerHTML = `${avatarHTML(p)}<div style="flex:1;min-width:0"><div class="nm">${guildTag(p)}${esc(p.name)}</div><div class="tl">${esc(titleName(p))}</div><div class="rk">${rk.label} · ${p.mmr} PL</div><div class="m-xp"><i style="width:${lv.pct * 100}%"></i></div><div class="m-xpt">NIVEL ${lv.level} · ${fmt(lv.cur)} / ${fmt(lv.need)} XP</div></div>`;
   root.querySelector('.m-cur').innerHTML = `<div class="c" title="Esencia Azul: moneda de la tienda">${UI.essence.replace('class="ico"', 'class="ico" style="color:#4fb8ff"')}${fmt(p.essence)}<small>Esencia</small></div><div class="c" title="Victorias totales">${UI.trophy.replace('class="ico"', 'class="ico" style="color:#f0c75e"')}${p.stats.wins}<small>Victorias</small></div>`;
-  root.querySelector('.m-slot.me').innerHTML = `${pimg(avatarKeySafe(p))}${esc(p.name)}`;
+  root.querySelector('.m-slot.me').innerHTML = `${pimg(avatarKey(p))}${esc(p.name)}`;
   root.querySelector('.fcount').textContent = `${FRIENDS.filter(f => f[2] !== 'off').length}/${FRIENDS.length}`;
   hydrate(root.querySelector('.m-side'));
 }
-const avatarKeySafe = p => { const m = /src="([^"]+)"/.exec(avatarHTML(p)); return null || (p.avatar || ''); };
 function bindSide() {
   root.querySelector('.m-me').onclick = () => { click(); openView('profile'); };
   root.querySelector('.m-slot.inv').onclick = () => { click(); toast('Las invitaciones de grupo llegarán con los servidores en línea.'); };
