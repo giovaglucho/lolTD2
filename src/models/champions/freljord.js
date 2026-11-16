@@ -105,7 +105,7 @@ export const MODELS = {
     for (const a of [r.armL, r.armR]) { a.scale.setScalar(1.25); P(a, tufts('wilArmFur', [[0, -.05, 0, .1], [.03, -.2, .02, .08]]), fur); }
     for (const hd of [r.handL, r.handR]) P(hd, merged('wilClaw', () => [-1, 0, 1].map(i => X(U.cone, [i * .04, -.09, .06], [PI - .4, 0, 0], [.02, .06, .02]))), horn);
     // NUNU sentado sobre la espalda
-    const nu = grp(r.torso, .05, .8, -.2); nu.scale.setScalar(.55);
+    const nu = grp(r.torso, 0, .72, -.32); nu.scale.setScalar(.82);
     const coat = cloth(Up ? 0xff6ab0 : 0x3a8ab0), hat = cloth(Up ? 0x2a2a3a : 0x2f6a8a), nskin = M(0xf2c8a8, { r: .6 }), scarf = cloth(Up ? 0x4fd8e0 : 0xc8342a, 1);
     P(nu, U.sph, coat, [0, .45, 0], [.24, .3, .2]);
     P(nu, U.ring, scarf, [0, .72, 0], [.17, .15, 1.8], [PI / 2, 0, 0]);
@@ -267,17 +267,14 @@ export const MODELS = {
       for (const [x, z] of [[-.38, .35], [.38, .35], [-.38, -.35], [.38, -.35]]) { const l = grp(torso, x, -.45, z); P(l, U.sph, hide, [0, -.25, 0], [.16, .22, .16]); P(l, U.sph, M(0xc8b8a0, { r: .8 }), [0, -.45, .05], [.12, .06, .14]); legs.push(l); }
       tail = grp(torso, 0, .1, -.78); P(tail, U.sph, hide, [0, 0, 0], .14);
     } else { // Bristle, el jabalí de guerra
-      P(torso, U.sph, hide, [0, .0, 0], [.55, .52, .95]);
-      P(torso, U.sph, hide, [0, .08, .45], [.6, .55, .5]);
+      P(torso, merged('brisBody', () => [X(U.sph, [0, 0, 0], [0, 0, 0], [.55, .52, .95]), X(U.sph, [0, .08, .45], [0, 0, 0], [.6, .55, .5])]), hide);
       P(torso, spikes('brisMane', [[0, .58, .55, -.6, 0, .09, .35], [0, .6, .3, -.9, 0, .1, .38], [0, .55, .05, -1.2, 0, .09, .34], [0, .48, -.25, -1.5, 0, .08, .3], [.15, .5, .4, -.7, -.4, .07, .28], [-.15, .5, .4, -.7, .4, .07, .28]]), dark);
-      P(torso, U.cyl, armor, [0, .1, .6], [.62, .25, .45], [PI / 2, 0, 0]); // peto de la montura
       P(torso, U.sph, red, [0, .42, -.05], [.45, .12, .45]); // manta de silla
-      P(torso, merged('brisPlates', () => mir(sx => X(U.sph, [sx * .5, .05, .15], [0, 0, sx * .2], [.1, .38, .5]))), armor);
+      P(torso, merged('brisPlates', () => [X(U.cyl, [0, .1, .6], [PI / 2, 0, 0], [.62, .25, .45]), ...mir(sx => X(U.sph, [sx * .5, .05, .15], [0, 0, sx * .2], [.1, .38, .5]))]), armor); // peto + placas de la montura
       head = grp(torso, 0, .0, .95);
       P(head, U.sph, hide, [0, .0, .05], [.36, .34, .38]);
-      P(head, U.cyl, dark, [0, -.08, .42], [.15, .12, .15], [PI / 2, 0, 0]);
+      P(head, merged('brisSnout', () => [X(U.cyl, [0, -.08, .42], [PI / 2, 0, 0], [.15, .12, .15]), ...mir(sx => X(U.cone, [sx * .26, .3, -.05], [-.5, 0, -sx * .7], [.08, .2, .04]))]), dark);
       P(head, merged('brisEyes', () => mir(sx => X(U.sph, [sx * .2, .1, .3], [0, 0, 0], .045))), glow(0xff5a2a, 2));
-      P(head, merged('brisEars', () => mir(sx => X(U.cone, [sx * .26, .3, -.05], [-.5, 0, -sx * .7], [.08, .2, .04]))), dark);
       P(head, merged('brisHelm', () => [X(U.sph, [0, .2, .12], [0, 0, 0], [.3, .14, .3]), X(U.cone, [0, .32, .2], [-.4, 0, 0], [.05, .2, .05])]), armor);
       jaw = grp(head, 0, -.22, .2); P(jaw, U.sph, dark, [0, 0, .1], [.22, .08, .24]);
       P(head, merged('brisTusks', () => mir(sx => norm2(tube('brisTusk' + sx, [[sx * .14, -.15, .35], [sx * .25, -.12, .5], [sx * .3, .05, .58], [sx * .26, .22, .55]], taper(.05, .008), 12, 6)))), tusk);
@@ -290,7 +287,7 @@ export const MODELS = {
     const rr = h.rig; rider.add(h.g); h.g.position.y = -.82;
     rr.legL.rotation.set(-1.2, 0, -.55); rr.legR.rotation.set(-1.2, 0, .55); rr.kneeL.rotation.x = 1.3; rr.kneeR.rotation.x = 1.3;
     P(rr.torso, U.sph, fur, [0, .45, -.02], [.34, .1, .24]);
-    for (const [a, sx] of [[rr.armL, -1], [rr.armR, 1]]) pauldron(a, sx, armor, Up ? fur : red, .28, .18, { tilt: .4, layer: fur });
+    for (const [a, sx] of [[rr.armL, -1], [rr.armR, 1]]) pauldron(a, sx, armor, Up ? fur : red, .28, .18, { tilt: .4 });
     P(rr.torso, U.ring, red, [0, .0, 0], [.2, .155, 1.2], [PI / 2, 0, 0]);
     cape(rr, Up ? cloth(0x3a6aa8, 1) : red, { rT: .3, rM: .35, rB: .44, l1: .4, l2: .5, arc: 2.4, trim: fur });
     const hb = hairM(0xf2ecdc); hairCap(rr, hb, { tilt: -.45 }); bangs(rr, hb, 4, { len: .12 });
@@ -303,9 +300,7 @@ export const MODELS = {
     P(fl, U.cyl, leather, [0, 0, .1], [.035, .5, .035], [PI / 2, 0, 0]);
     P(fl, merged('sejChain', () => { const o = []; for (let i = 0; i < 6; i++) o.push(X(U.ring, [0, -.06 - i * .07, .36], [0, i % 2 ? PI / 2 : 0, 0], [.035, .035, .6])); return o; }), metal(0x9aa2ac, .35));
     const ball = grp(fl, 0, -.5, .36);
-    P(ball, U.ico, iceM(0xa8ecff, 1.2), [0, 0, 0], .19);
-    P(ball, spikes('sejBallSpk', [[0, .2, 0, 0, 0, .05, .16], [0, -.2, 0, PI, 0, .05, .16], [.2, 0, 0, 0, -PI / 2, .05, .16], [-.2, 0, 0, 0, PI / 2, .05, .16], [0, 0, .2, PI / 2, 0, .05, .16], [0, 0, -.2, -PI / 2, 0, .05, .16]], U.pyr), iceM(0xdff8ff, 1.4));
-    P(ball, U.sph, add(0x8fe0ff, 1.2, .18), [0, 0, 0], .24);
+        P(ball, merged('sejBallAll', () => [X(U.ico, [0, 0, 0], [0, 0, 0], .19), ...[[0, .2, 0, 0, 0], [0, -.2, 0, PI, 0], [.2, 0, 0, 0, -PI / 2], [-.2, 0, 0, 0, PI / 2], [0, 0, .2, PI / 2, 0], [0, 0, -.2, -PI / 2, 0]].map(([x, y, z, rx, rz]) => X(U.pyr, [x, y, z], [rx, 0, rz], [.05, .16, .035]))]), iceM(0xc8f4ff, 1.4));
     rr.armR.rotation.set(-.35, 0, .75); rr.foreR.rotation.x = -.5; rr.armL.rotation.set(-.6, 0, -.3); rr.foreL.rotation.x = -.6;
     const rig = { type: 'quad', root, body, torso, head, jaw, tail, legs, theme: Up ? 0xcff4ff : 0x9fe4ff, rider: rr, flail: fl, ball, armR: rr.armR, foreR: rr.foreR, rTorso: rr.torso, rCape: rr.cape };
     const res = { g, rig, s: 1 };
@@ -361,14 +356,14 @@ export const MODELS = {
     const feat = M(Up ? 0x6a3aaa : 0xbfeaff, { m: .1, r: .15, fs: 1, e: Up ? .5 : .35, ec: Up ? 0xa050ff : 0x5ab8ff, t: .92 });
     const gl = glow(Up ? 0xc080ff : 0xdff6ff, 2.6), deep = M(Up ? 0x1a0e2a : 0x3a7ab0, { m: .2, r: .3, fs: 1 });
     const torso = grp(body);
-    P(torso, U.ico, ice, [0, 0, 0], [.32, .36, .42]);
-    P(torso, U.ico, M(Up ? 0x8a5aca : 0xe6f8ff, { r: .25, fs: 1, e: .3, ec: 0x8fd0ff }), [0, -.05, .16], [.24, .28, .26]);
+    P(torso, U.ico, ice, [0, 0, 0], [.42, .46, .54]);
+    P(torso, U.ico, M(Up ? 0x8a5aca : 0xe6f8ff, { r: .25, fs: 1, e: .3, ec: 0x8fd0ff }), [0, -.06, .2], [.31, .36, .33]);
     P(torso, spikes('aniBack', [[0, .3, -.1, -1.2, 0, .06, .3], [0, .25, -.3, -1.5, 0, .05, .26], [.12, .2, -.2, -1.3, -.3, .04, .2], [-.12, .2, -.2, -1.3, .3, .04, .2]], U.pyr), feat);
     // cuello y cabeza
     const neck = grp(torso, 0, .25, .25); neck.rotation.x = -.35;
     P(neck, U.cyl, ice, [0, .18, 0], [.11, .38, .11]);
     const head = grp(neck, 0, .42, .05); head.rotation.x = .35;
-    P(head, U.ico, ice, [0, 0, .05], [.16, .15, .2]);
+    P(head, U.ico, ice, [0, 0, .05], [.2, .19, .25]);
     P(head, U.cone, M(Up ? 0x2a1a3a : 0xe8f6ff, { r: .2 }), [0, -.03, .3], [.06, .22, .05], [PI / 2, 0, 0]);
     P(head, merged('aniEyes', () => mir(sx => X(U.oct, [sx * .1, .04, .15], [0, 0, sx * .3], [.04, .022, .02]))), gl);
     P(head, spikes('aniCrest', [[0, .12, -.05, -1.0, 0, .05, .45], [0, .08, -.12, -1.3, 0, .04, .4], [.08, .1, -.06, -1.0, -.4, .035, .32], [-.08, .1, -.06, -1.0, .4, .035, .32], [.12, .0, -.08, -1.4, -.8, .03, .25], [-.12, .0, -.08, -1.4, .8, .03, .25]], U.pyr), feat);
@@ -410,7 +405,7 @@ export const MODELS = {
   // ═════════════ VOLIBEAR · La Tormenta Implacable (Up: Señor del Trueno) ═════════════
   volibear(Up) {
     const furC = Up ? 0x4a4c56 : 0xe4e8ee, fur = M(furC, { r: .95 }), fur2 = M(Up ? 0x2a2c34 : 0xb8c0cc, { r: .95 }), dark = M(Up ? 0x15161c : 0x3a3e48, { r: .6 });
-    const bolt = glow(Up ? 0xffe680 : 0x9fd8ff, 2.8), boltA = add(Up ? 0xffe680 : 0x9fd8ff, 2, .45), goldA = M(0xe0b050, { m: .9, r: .26, e: .3, ec: 0xffa020 }), claw = M(0xf2ecdc, { r: .35 });
+    const bolt = glow(Up ? 0xffd23a : 0x3aa8ff, 3.2), boltA = add(Up ? 0xffd23a : 0x3aa8ff, 2, .45), goldA = M(0xe0b050, { m: .9, r: .26, e: .3, ec: 0xffa020 }), claw = M(0xf2ecdc, { r: .35 });
     const h = humanoid({ bulk: 1.95, head: 1.3, leg: .82, skin: furC, topM: fur, sleeveM: fur, foreM: fur, handM: dark, thighM: fur, shinM: fur2, bootM: dark, beltM: fur2, hipM: fur, faceM: fur, noEyes: true, style: 'slam', noBelt: true });
     const r = h.rig, hs = r.hs; r.root.scale.setScalar(1.32);
     r.torso.rotation.x = .36; r.head.rotation.x = -.32;
@@ -421,6 +416,8 @@ export const MODELS = {
     // relámpagos por la espalda
     P(r.torso, merged('voliBolts', () => { const o = []; for (const sx of [-1, 0, 1]) { let x = sx * .25, y = .75, z = -.25; for (let i = 0; i < 4; i++) { const nx = x + (i % 2 ? .08 : -.08) * (sx || 1), ny = y - .17; o.push(XAB(U.box, [x, y, z], [nx, ny, z - .03], .035, .02)); x = nx; y = ny; } } return o; }), bolt);
     P(r.torso, spikes('voliSpine', [[0, .7, -.3, -1.0, 0, .08, .35], [0, .5, -.4, -1.3, 0, .08, .32], [0, .25, -.42, -1.6, 0, .07, .28]], U.pyr), Up ? goldA : fur2);
+    // relámpagos en el pecho y los hombros (proyectados sobre el pecho)
+    P(r.torso, merged('voliFrontBolts', () => { const o = []; const zz = (x, y) => .02 + .36 * Math.sqrt(Math.max(.02, 1 - (x / .55) ** 2 - ((y - .32) / .38) ** 2)) + .015; for (const sx of [-1, 1]) { const pts = [[sx * .12, .6], [sx * .2, .5], [sx * .1, .44], [sx * .26, .32], [sx * .16, .26], [sx * .3, .12]]; for (let i = 0; i < pts.length - 1; i++) { const [x1, y1] = pts[i], [x2, y2] = pts[i + 1]; o.push(XAB(U.box, [x1, y1, zz(x1, y1)], [x2, y2, zz(x2, y2)], .028, .018)); } } return o; }), bolt);
     // cadenas con trofeos
     P(r.torso, merged('voliChain', () => { const o = []; for (let i = 0; i < 9; i++) { const u = i / 8, x = -.45 + u * .9, y = .62 - Math.sin(u * PI) * .35; o.push(X(U.ring, [x, y, .3 + Math.sin(u * PI) * .08], [0, i % 2 ? PI / 2 : 0, .4], [.05, .05, .8])); } return o; }), M(0x8a8a90, { m: .7, r: .4 }));
     P(r.torso, merged('voliTrophy', () => [X(U.sph, [0, .28, .42], [0, 0, 0], [.09, .08, .07]), X(U.box, [-.2, .38, .4], [0, 0, .3], [.1, .14, .03]), X(U.box, [.22, .36, .4], [0, 0, -.3], [.1, .12, .03])]), Up ? goldA : M(0xd8ccb0, { r: .5 }));
@@ -438,6 +435,7 @@ export const MODELS = {
     if (Up) P(r.head, merged('voliCrown', () => [X(U.ring, [0, .38, -.02], [PI / 2 - .3, 0, 0], [.27, .25, .7]), ...[-1, 0, 1].map(i => X(U.pyr, [i * .13, .5 + (i ? 0 : .05), .1 - Math.abs(i) * .05], [-.3, 0, -i * .4], [.04, .18, .02]))]), goldA, [0, 0, 0], hs);
     // zarpas
     for (const hd of [r.handL, r.handR]) { hd.scale.setScalar(1.5); P(hd, merged('voliClaw', () => [-1, 0, 1].map(i => X(U.cone, [i * .035, -.1, .06], [PI - .5, 0, i * .2], [.018, .12, .018]))), claw); }
+    for (const [a, sx] of [[r.armL, -1], [r.armR, 1]]) P(a, merged('voliArmBolt' + sx, () => [XAB(U.box, [sx * .17, -.02, .04], [sx * .2, -.1, .04], .03, .02), XAB(U.box, [sx * .2, -.1, .04], [sx * .16, -.16, .04], .03, .02), XAB(U.box, [sx * .16, -.16, .04], [sx * .19, -.25, .04], .03, .02)]), bolt);
     for (const a of [r.armL, r.armR]) P(a, tufts('voliArmFur', [[0, -.02, 0, .12], [.04, -.15, -.04, .1]]), fur);
     if (Up) for (const [a, sx] of [[r.armL, -1], [r.armR, 1]]) pauldron(a, sx, goldA, dark, .2, .14, { tilt: .4 });
     // corona de rayos (aura)

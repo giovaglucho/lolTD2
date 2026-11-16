@@ -179,10 +179,17 @@ export const MODELS = {
       P(f, lathe('tgTaGaunt', [[.07, .02], [.1, -.04], [.12, -.18], [.1, -.26]]), plate);
       P(f, merged('tgTaGG', () => [X(U.oct, [0, -.12, .1], [0, 0, 0], [.05, .08, .04]), X(U.oct, [0, -.15, -.09], [0, 0, 0], [.04, .06, .03])]), sx > 0 ? gem : gemP);
     }
+    // martillo de gemas
+    const hm = grp(r.handR, 0, -.03, 0), hd = grp(hm, 0, 0, .95);
+    P(hm, merged('tgTaHandle', () => [X(U.cyl, [0, 0, .35], [PI / 2, 0, 0], [.04, 1.1, .04]), X(U.sph, [0, 0, -.2], [0, 0, 0], .06)]), gold);
+    P(hd, merged('tgTaHead', () => [X(U.rbox, [0, 0, 0], [0, 0, 0], [.6, .34, .34])]), plate);
+    P(hd, merged('tgTaCap', () => [-1, 1].map(sx => X(U.cyl, [sx * .32, 0, 0], [0, 0, PI / 2], [.2, .08, .2]))), gold);
+    P(hd, merged('tgTaHG', () => [X(U.oct, [0, 0, .18], [PI / 2, 0, 0], [.1, .04, .14]), X(U.oct, [0, 0, -.18], [PI / 2, 0, 0], [.1, .04, .14]), ...[-1, 1].map(sx => X(U.oct, [sx * .38, 0, 0], [0, 0, 0], [.08, .13, .08]))]), gem);
+    r.weapon = hm; r.holdR = true;
     // aura de gemas flotantes
     const fl = grp(r.root, 0, 1.25, 0); r.gems = fl;
     P(fl, merged('tgTaFloat', () => [0, 1, 2, 3].map(i => X(U.oct, [Math.cos(i * TAU / 4) * .7, Math.sin(i * 1.7) * .15, Math.sin(i * TAU / 4) * .7], [0, i, 0], [.06, .1, .06]))), gem);
-    r.armL.rotation.set(-.15, 0, -.25); r.foreL.rotation.x = -.5; r.armR.rotation.set(-.15, 0, .25); r.foreR.rotation.x = -.5;
+    r.armL.rotation.set(-.15, 0, -.25); r.foreL.rotation.x = -.5; r.armR.rotation.set(-.35, 0, .3); r.foreR.rotation.x = -1.7; hm.rotation.set(-.15, 0, 0);
     r.theme = gemC;
     r.anim = (m, r, st, t) => { r.gems.rotation.y = -t * .9 + m.phase; r.gems.position.y = 1.25 + Math.sin(t * 1.7) * .06; };
     return h;
@@ -349,6 +356,7 @@ export const MODELS = {
 
   // ═══════════════════════ AURELION SOL ═══════════════════════
   aurelionsol(Up) {
+    let r_wings;
     const g = new THREE.Group(), root = grp(g), body = grp(root, 0, .12, 0); root.scale.setScalar(1.15);
     const sc = Up ? M(0x1e1618, { r: .5, m: .25 }) : M(0x1e2c78, { r: .42, m: .3 }), belly = Up ? M(0x3a1208, { r: .5, e: .9, ec: 0xff4a10 }) : M(0x4a6ad0, { r: .45, m: .2 });
     const goldA = Up ? M(0x5a4a44, { m: .9, r: .35 }) : M(0xf2c454, { m: .93, r: .24 }), goldD = Up ? M(0x2e2624, { m: .85, r: .4 }) : M(0xb88a2a, { m: .9, r: .32 });
@@ -375,6 +383,15 @@ export const MODELS = {
     const tip = rel(Cp, Cp[0])[Cp.length - 1];
     P(segs[2], starGeo, starG, [tip[0], tip[1], tip[2] + .05], .28, [0, 0, 0]);
     P(segs[2], U.sph, M(starC, { e: 2, ec: starC, t: .35, add: 1 }), [tip[0], tip[1], tip[2] + .05], .16);
+    // alas cósmicas
+    const wingG = prof('AsWing', sh => { sh.moveTo(0, 0); sh.lineTo(.5, .62); sh.lineTo(1.15, .78); sh.lineTo(1.0, .35); sh.lineTo(1.28, .22); sh.lineTo(.95, -.05); sh.lineTo(1.05, -.3); sh.lineTo(.6, -.28); sh.lineTo(.3, -.4); sh.lineTo(0, -.12); sh.lineTo(0, 0); }, .02, .008);
+    r_wings = [];
+    for (const sx of [-1, 1]) {
+      const w = grp(segs[0], sx * .12, .02, -.12); w.rotation.set(0, sx > 0 ? .35 : PI - .35, sx * .35); r_wings.push(w);
+      P(w, wingG, neb, [0, 0, 0], 1);
+      P(w, merged('tgAsWBone' + (sx > 0 ? 'R' : 'L'), () => [XAB(U.cyl, [0, 0, 0], [.5, .62, 0], .028), XAB(U.cyl, [.5, .62, 0], [1.15, .78, 0], .022), XAB(U.cyl, [.5, .62, 0], [1.0, .35, 0], .014), XAB(U.cyl, [.5, .62, 0], [.95, -.05, 0], .014)]), goldA);
+      P(w, merged('tgAsWStar' + (sx > 0 ? 'R' : 'L'), () => [[.5, .2], [.8, .35], [.75, 0], [.35, .0], [1.0, .55]].map(([x, y]) => X(U.oct, [x, y, .03], [0, 0, 0], .035))), starG);
+    }
     // brazos pequeños con garras
     for (const sx of [-1, 1]) {
       const a = grp(segs[0], sx * .18, -.42, .05); a.rotation.set(-.6, 0, sx * .5);
@@ -402,7 +419,7 @@ export const MODELS = {
       for (let i = 0; i < 3; i++) { const a = i / 3 * TAU, s = grp(orbit, Math.cos(a) * 1.15, Math.sin(i * 2.3) * .2, Math.sin(a) * 1.15); P(s, U.ico, starG, [0, 0, 0], .1); P(s, U.sph, M(starC, { e: 2, ec: starC, t: .3, add: 1 }), [0, 0, 0], .2); }
     }
     if (Up) P(root, merged('tgAsEmbers', () => [0, 1, 2, 3, 4, 5].map(i => X(U.oct, [Math.cos(i) * .7, .4 + i * .3, Math.sin(i * 1.3) * .6], [i, i, 0], .04))), glow(0xff6a1a, 3));
-    const rig = { type: 'sol', root, body, head, jaw, segs, orbit, flyer: true, hs: 1.4, theme: Up ? 0xff6a2a : 0xffe28a, mouthG };
+    const rig = { type: 'sol', wings: r_wings, root, body, head, jaw, segs, orbit, flyer: true, hs: 1.4, theme: Up ? 0xff6a2a : 0xffe28a, mouthG };
     rig.anim = (m, r, st, t) => {
       const a = st.atk, ph = t * 1.3 + m.phase;
       SP(r.body, 0, Math.sin(ph) * .07, 0);
@@ -411,6 +428,7 @@ export const MODELS = {
       S(r.head, br, Math.sin(t * .7 + m.phase) * .15, 0);
       S(r.jaw, a >= 0 ? k0(a, [[0, 0], [.3, .15], [.45, .6], [.8, .4], [1, 0]]) : .05 + Math.max(0, Math.sin(t * .9)) * .08);
       r.mouthG.scale.setScalar(.06 * (a >= 0 ? .5 + k0(a, [[0, 0], [.4, 2.5], [.8, 1.5], [1, 0]]) : .6));
+      r.wings.forEach((w, i) => { const sx = i ? -1 : 1; w.rotation.z = sx * (.35 + Math.sin(ph * 2.2) * .3 + (a >= 0 ? k0(a, [[0, 0], [.3, -.3], [.5, .5], [1, 0]]) : 0)); });
       r.orbit.rotation.y = t * .9 + m.phase; r.orbit.children.forEach((c, i) => c.rotation.set(t * 2 + i, t * 1.5, 0));
     };
     return { g, rig, s: 1 };

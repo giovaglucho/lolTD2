@@ -459,7 +459,7 @@ export class Sim {
     // retargeting
     if (!e.tgt || e.tgt.dead || (e.tgt.stealthT > 0) || (e.rt <= 0 && !(e.tauntT > 0))) {
       e.rt = .35;
-      let best = null, bd = def ? Math.max(e.range + 2.5, 8) : 11;
+      let best = null, bd = def ? (e.def.melee ? Math.max(9, e.range + 3) : Math.max(e.range + 2.5, 8)) : 11;
       for (const o of this.ents) if (!o.dead && o.lane === lane && o.team !== e.team && !(o.stealthT > 0)) { const d = dist(e, o); if (d < bd) { bd = d; best = o; } }
       if (!best && !def) best = P.nexus;
       if (def && best && Math.hypot(best.x - e.hx, best.z - e.hz) > 14) best = null;

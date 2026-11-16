@@ -87,8 +87,8 @@ export const MODELS = {
     P(r.head, lathe('ahriHairBack2', [[.02, .44], [.2, .4], [.27, .28], [.285, .12], [.26, -.12], [.23, -.4], [.17, -.62], [.02, -.7]], 16), hk, [0, .16 * hs, -.07], [hs, hs, .72 * hs]);
     r.braids = mir(sx => { const bg = grp(r.head); P(bg, tube('ahriLock' + sx, [[sx * .2, .3, .12], [sx * .25, .1, .14], [sx * .25, -.15, .12], [sx * .22, -.4, .08]], taper(.05, .025), 14, 6), hk); return bg; });
     // orejas de zorro
-    P(r.head, merged('ahriEars', () => mir(sx => X(U.cone, [sx * .16, .52, -.04], [-.15, 0, -sx * .38], [.09, .24, .055]))), hk);
-    P(r.head, merged('ahriEarsIn', () => mir(sx => X(U.cone, [sx * .16, .51, -.005], [-.15, 0, -sx * .38], [.055, .17, .03]))), M(0xf4a3b8, { r: .8 }));
+    P(r.head, merged('ahriEars', () => mir(sx => X(U.cone, [sx * .17, .62, -.02], [-.1, 0, -sx * .32], [.15, .42, .08]))), hk);
+    P(r.head, merged('ahriEarsIn', () => mir(sx => X(U.cone, [sx * .17, .58, .02], [-.1, 0, -sx * .32], [.075, .25, .04]))), M(0xf4a3b8, { r: .8 }));
     if (Up) P(r.head, merged('ahriFlower', () => { const o = []; for (let i = 0; i < 5; i++) { const a = i / 5 * TAU; o.push(X(U.sph, [.2 + Math.cos(a) * .04, .38 + Math.sin(a) * .04, .1], [0, 0, a], [.04, .02, .015])); } return o; }), M(0xff8ac8, { r: .5, e: .4, ec: 0xff5aa0 }));
     else P(r.head, merged('ahriPins', () => [X(U.sph, [.21, .36, .1], [0, 0, 0], .03), X(U.cyl, [.24, .28, .1], [0, 0, .5], [.008, .12, .008])]), gold);
     // nueve colas en abanico (3 grupos para que ondeen)
@@ -132,15 +132,15 @@ export const MODELS = {
     P(r.head, U.cyl, goldA, [0, .5, -.16], [.06, .06, .06], [-.6, 0, 0]);
     P(r.head, merged('ireTiara', () => [X(U.ring, [0, .33, .0], [PI / 2 - .35, 0, 0], [.265, .25, .5]), X(U.pyr, [0, .4, .22], [-.25, 0, 0], [.035, .16, .012]), ...mir(sx => X(U.pyr, [sx * .1, .37, .21], [-.25, 0, sx * .5], [.02, .1, .01]))]), goldA);
     // abanico de cuchillas flotantes
-    const bladeM = Up ? M(0x7ff0d8, { m: .4, r: .15, e: .6, ec: 0x30c0a0 }) : M(0xf0c060, { m: .6, r: .25, e: .25, ec: 0xc08020 }), inner = Up ? glow(0xbfffee, 2) : glow(0x7fe8ff, 1.4);
+    const bladeM = Up ? M(0x7ff0d8, { m: .4, r: .15, e: .6, ec: 0x30c0a0 }) : M(0xd4e0ee, { m: .8, r: .22, e: .2, ec: 0x6ac0ff }), inner = Up ? glow(0xbfffee, 2) : glow(0x7fe8ff, 1.4);
     const bGeo = ext('ireBlade', s => { s.moveTo(0, 0); s.quadraticCurveTo(.09, .18, .075, .45); s.lineTo(0, .78); s.lineTo(-.075, .45); s.quadraticCurveTo(-.09, .18, 0, 0); }, .02, .008, 0);
     const iGeo = ext('ireBladeIn', s => { s.moveTo(0, .1); s.lineTo(.018, .45); s.lineTo(0, .66); s.lineTo(-.018, .45); s.lineTo(0, .1); }, .03, 0, 0);
-    const fan = grp(r.torso, 0, .32, -.34); r.blades = [];
-    const angs = Up ? [-1.5, -.9, -.3, .3, .9, 1.5] : [-1.25, -.42, .42, 1.25];
+    const fan = grp(r.root, 0, 1.0, 0); r.blades = [];
+    const angs = Up ? [-2.5, -1.7, -.85, .85, 1.7, 2.5] : [-2.3, -.9, .9, 2.3];
     angs.forEach((an, i) => {
-      const o = grp(fan); o.rotation.set(0, 0, an); const tw = grp(o, 0, .14, 0); tw.rotation.x = -.25;
-      P(tw, bGeo, bladeM); P(tw, iGeo, inner);
-      P(tw, U.ring, bladeM, [0, -.03, 0], [.045, .045, .5]);
+      const o = grp(fan); o.rotation.set(0, an, 0); const tw = grp(o, 0, 0, .66); tw.rotation.x = .22; tw.scale.setScalar(.95);
+      P(tw, bGeo, bladeM, [0, .03, 0]); P(tw, iGeo, inner, [0, .03, 0]);
+      P(tw, merged('ireHilt', () => [X(U.ring, [0, .02, 0], [0, 0, 0], [.05, .05, .6]), X(U.cyl, [0, -.07, 0], [0, 0, 0], [.02, .11, .02])]), goldA);
       r.blades.push(o);
     });
     r.fan = fan;
@@ -150,8 +150,8 @@ export const MODELS = {
       const a = st.atk >= 0 ? Math.min(1, st.atk) : -1;
       rr.blades.forEach((b, i) => {
         const j = i % 2 ? 1 : -1, mid = Math.abs(angs[i]) < 1;
-        if (a >= 0 && mid) { const k = kf(a, 0, [[0, 0], [.3, -.25], [.48, 1.0], [.75, .7], [1, 0]]); S(b, 1.45 * Math.max(0, k), 0, -angs[i] * Math.max(0, k) * .9); SP(b, 0, -.1 * k, .5 * Math.max(0, k)); }
-        else { S(b, Math.sin(t * 2 + i) * .05, 0, Math.sin(t * 1.6 + i * 1.3) * .06 * j); SP(b, 0, Math.sin(t * 2.2 + i) * .03, 0); }
+        if (a >= 0 && mid) { const k = kf(a, 0, [[0, 0], [.3, -.25], [.48, 1.0], [.75, .7], [1, 0]]); S(b, 1.3 * Math.max(0, k), 0, 0); SP(b, 0, .1 * k, 0); }
+        else { S(b, Math.sin(t * 2 + i) * .08, 0, Math.sin(t * 1.6 + i * 1.3) * .06 * j); SP(b, 0, Math.sin(t * 2.2 + i) * .05, 0); }
       });
     };
     return h;
@@ -294,7 +294,7 @@ export const MODELS = {
     for (const a of [r.armL, r.armR]) P(a, merged('karmaTat', () => [0, 1, 2].map(i => X(U.box, [0, -.13 - i * .04, .075], [0, 0, (i % 2 ? .4 : -.4)], [.045, .008, .006]))), M(fireC, { e: 1.5, ec: fireC }));
     // pelo largo con trenzas y tocado dorado
     const hk = hairM(0x1a1018); hairCap(r, hk, { tilt: -.45, w: 1.04, d: 1.04 }); bangs(r, hk, 2, { len: .12, spread: 1.4 });
-    P(r.head, lathe('karmaHair', [[.25, .3], [.27, .1], [.26, -.2], [.22, -.55], [.15, -.85], [.02, -.9]], 16), hk, [0, .18 * hs, -.08], [hs, hs, .7 * hs]);
+    P(r.head, lathe('karmaHair', [[.02, .3], [.17, .27], [.26, .17], [.27, .1], [.26, -.2], [.22, -.55], [.15, -.85], [.02, -.9]], 16), hk, [0, .18 * hs, -.08], [hs, hs, .7 * hs]);
     r.braids = mir(sx => { const bg = grp(r.head); P(bg, tube('karmaBraid' + sx, [[sx * .22, .25, .08], [sx * .27, .0, .1], [sx * .26, -.3, .07], [sx * .22, -.6, .05]], taper(.045, .03, .35, 30), 20, 6), hk); P(bg, merged('karmaBRing' + sx, () => [-.05, -.32, -.58].map(y => X(U.cyl, [sx * (y < -.4 ? .22 : .265), y, .07], [0, 0, 0], [.045, .03, .045]))), goldA); return bg; });
     P(r.head, merged('karmaCrown', () => [X(U.ring, [0, .32, .0], [PI / 2 - .3, 0, 0], [.27, .26, .6]), X(U.oct, [0, .42, .22], [0, 0, 0], [.05, .1, .02]), ...mir(sx => X(U.pyr, [sx * .13, .4, .19], [-.3, 0, sx * .4], [.025, .12, .012])), ...mir(sx => X(U.cone, [sx * .25, .38, -.05], [0, 0, -sx * .9], [.03, .2, .02]))]), goldA);
     P(r.head, U.oct, glow(fireC, 2.4), [0, .3 * hs, .245 * hs], [.018, .03, .01]); // marca de la frente
@@ -305,9 +305,9 @@ export const MODELS = {
     P(wisps, merged('karmaWisps', () => { const o = []; for (let i = 0; i < 3; i++) { const an = i / 3 * TAU; const x = Math.cos(an) * .62, z = Math.sin(an) * .62, y = Math.sin(i * 2) * .1; o.push(X(U.sph, [x, y, z], [0, 0, 0], [.08, .09, .08]), X(U.cone, [x, y + .13, z], [0, 0, 0], [.06, .2, .06])); } return o; }), fire);
     P(wisps, merged('karmaWispC', () => { const o = []; for (let i = 0; i < 3; i++) { const an = i / 3 * TAU; o.push(X(U.sph, [Math.cos(an) * .62, Math.sin(i * 2) * .1, Math.sin(an) * .62], [0, 0, 0], .04)); } return o; }), fireCore);
     r.wisps = wisps;
-    if (Up) { // halo de loto
+    { // abanico / halo de loto de energía (Mantra)
       const lo = grp(r.torso, 0, .62, -.3);
-      P(lo, merged('karmaLotus', () => { const o = []; for (let i = 0; i < 10; i++) { const an = i / 10 * TAU; o.push(X(U.sph, [Math.cos(an) * .32, Math.sin(an) * .32, 0], [0, 0, an + PI / 2], [.07, .2, .02])); } return o; }), M(0xff9ad0, { r: .5, e: .7, ec: 0xff5aa0, ds: 1 }));
+      P(lo, merged('karmaLotus', () => { const o = []; for (let i = 0; i < 10; i++) { const an = i / 10 * TAU; o.push(X(U.sph, [Math.cos(an) * .32, Math.sin(an) * .32, 0], [0, 0, an + PI / 2], [.07, .2, .02])); } return o; }), Up ? M(0xff9ad0, { r: .5, e: .7, ec: 0xff5aa0, ds: 1 }) : M(0x9a6aff, { r: .5, e: .9, ec: 0x7a4aff, ds: 1, t: .8 }));
       P(lo, U.ring, goldA, [0, 0, .01], [.4, .4, .6]);
     }
     r.armR.rotation.set(-.45, 0, .3); r.foreR.rotation.x = -.95; r.armL.rotation.set(-.1, 0, -.25); r.foreL.rotation.x = -.7;

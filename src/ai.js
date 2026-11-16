@@ -5,8 +5,8 @@ import { SPELL_BY } from './content/spells.js';
 
 const FRONT = new Set(['Tanque', 'Bruiser', 'Duelista', 'Luchador']);
 const isFront = f => FRONT.has(f.role);
-function freeSlots(sim, side, front) {
-  const rows = front ? [0, 1, 2] : [3, 4, 5, 2, 1];
+function freeSlots(sim, side, front, mid) {
+  const rows = mid ? [1, 2, 0, 3] : front ? [0, 1, 2] : [3, 4, 5, 2, 1];
   const cs = [...Array(GRID.cols).keys()].sort((a, b) => Math.abs(a - 4.5) - Math.abs(b - 4.5));
   const out = []; for (const r of rows) for (const c of cs) if (sim.canPlace(side, c, r)) out.push([c, r]); return out;
 }
@@ -39,7 +39,7 @@ export function aiTurn(sim, side, diffKey = 'normal') {
     if (!pool.length) break;
     // las dificultades altas prefieren unidades caras y Soraka si hay muchos tanques
     if (D.spend >= 1) pool.sort((a, b) => b.cost - a.cost), pool = pool.slice(0, 4);
-    const f = pick(pool), s = freeSlots(sim, side, isFront(f)); if (!s.length) break;
+    const f = pick(pool), s = freeSlots(sim, side, isFront(f), f.role === 'Asesino'); if (!s.length) break;
     const slot = D.spend >= 1 ? s[0] : pick(s.slice(0, 6));
     sim.place(side, f.id, slot[0], slot[1]);
   }

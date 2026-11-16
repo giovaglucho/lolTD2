@@ -9,16 +9,17 @@ const q = new URLSearchParams(location.search);
 const byTier = l => [...l.champions].sort((a, b) => a.tier - b.tier);
 const PT = byTier(piltover), TG = byTier(targon);
 const set = q.get('set') || 'all';
-let champs = set === 'pt' ? PT : set === 'tg' ? TG : [...PT, ...TG];
+const TUR = [{ id: 'heimer_turret', name: 'Torreta', model: 'heimer_turret', tier: 0 }, { id: 'heimer_turret_up', name: 'Dragoncito', model: 'heimer_turret_up', tier: 0 }];
+let champs = set === 'pt' ? PT : set === 'tg' ? TG : [...PT, ...TG, ...TUR];
 const focus = q.get('focus');
 const anim = q.get('anim') === '1', walk = q.get('walk') === '1', T = +(q.get('t') ?? .45);
 const yaw0 = +(q.get('yaw') ?? -.4), pitch = +(q.get('pitch') ?? .32);
-const upQ = q.get('up') || '0';
+const upQ = q.get('up') || 'both';
 let cellsDef = [];
 if (focus) {
   const ids = focus.split(',');
   for (const id of ids) {
-    const c = [...PT, ...TG].find(x => x.id === id || x.model === id) || { id, name: id, model: id, tier: 0 };
+    const c = [...PT, ...TG, ...TUR].find(x => x.id === id || x.model === id) || { id, name: id, model: id, tier: 0 };
     const yaws = q.get('yaws') ? q.get('yaws').split(',').map(Number) : [yaw0, yaw0 + 1.9];
     for (const up of [false, true]) for (const y of yaws) cellsDef.push({ c, up, yaw: y });
   }

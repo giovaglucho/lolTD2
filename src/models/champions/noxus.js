@@ -244,11 +244,11 @@ export const MODELS = {
 
   // ═════════════════════ SION ═════════════════════
   sion(Up) {
-    const flesh = Up ? M(0x4a3c3a, { r: .7, e: .07, ec: 0xff3a0a }) : M(0xa49488, { r: .75 }), fleshD = Up ? M(0x2a2224, { r: .8 }) : M(0x6a5a52, { r: .8 });
+    const flesh = Up ? M(0x4a3c3a, { r: .7, e: .07, ec: 0xff3a0a }) : M(0x8c9a8c, { r: .75 }), fleshD = Up ? M(0x2a2224, { r: .8 }) : M(0x6a5a52, { r: .8 });
     const iron = Up ? M(0x2e2624, { m: .55, r: .4, e: .05, ec: 0xff3a0a }) : M(0x5a5048, { m: .6, r: .5 }), rust = Up ? glow(0xff6a1a, 1.8) : M(0x7a4a2a, { m: .4, r: .6 }), red = cloth(Up ? 0x3a0a0a : 0x6a1414, 1);
     const eye = glow(Up ? 0xffa030 : 0xff2a1a, 3.5);
-    const h = humanoid({ bulk: 1.6, head: .88, leg: .95, skin: Up ? 0x4a3c3a : 0xa49488, topM: fleshD, sleeveM: flesh, foreM: iron, handM: flesh, thighM: M(0x2a2220, { r: .8 }), shinM: iron, bootM: iron, beltM: iron, hipM: M(0x2a2220, { r: .8 }), faceM: flesh, noEyes: true, style: 'slam' });
-    const r = h.rig, hs = r.hs; r.root.scale.setScalar(1.22); r.heavy = true;
+    const h = humanoid({ bulk: 1.6, head: .88, leg: .95, skin: Up ? 0x4a3c3a : 0x8c9a8c, topM: fleshD, sleeveM: flesh, foreM: iron, handM: flesh, thighM: M(0x2a2220, { r: .8 }), shinM: iron, bootM: iron, beltM: iron, hipM: M(0x2a2220, { r: .8 }), faceM: flesh, noEyes: true, style: 'slam' });
+    const r = h.rig, hs = r.hs; r.root.scale.setScalar(1.36); r.heavy = true;
     r.torso.rotation.x = .28; r.head.rotation.x = -.2;
     P(r.torso, U.sph, iron, [0, .33, .06], [.27, .2, .14]);
     P(r.torso, merged('nxSioRibs', () => [0, 1, 2].map(i => X(U.box, [-.08, .14 + i * .05, .16], [0, 0, .1], [.12, .018, .02]))), M(0xd8d0b8, { r: .5 }));
@@ -296,7 +296,7 @@ export const MODELS = {
     P(r.cape[1], merged('nxTalCapeBl', () => { const o = []; for (let i = 0; i < 7; i++) { const a = PI - 1.25 + i / 6 * 2.5; o.push(X(U.pyr, [Math.sin(a) * .43, -.73, Math.cos(a) * .43], [PI, -a, 0], [.025, .12, .008])); } return o; }), steel);
     // hojas de muñeca
     const bl = Up ? M(0xffd06a, { m: .8, r: .2, e: .5, ec: 0xff5a1a }) : M(0xd8dde6, { m: .55, r: .2 });
-    r.blades = [r.foreL, r.foreR].map((f, i) => { const g = grp(f, 0, -.2, .06); P(g, ext('nxTalBlade', s => { s.moveTo(-.03, 0); s.lineTo(-.04, .3); s.lineTo(0, .48); s.lineTo(.05, .28); s.lineTo(.03, 0); s.lineTo(-.03, 0); }, .015, .005, 0), bl, [0, 0, 0], 1, [PI, 0, 0]); P(g, U.rbox, leather, [0, .02, -.02], [.08, .12, .06]); return g; });
+    r.blades = [r.foreL, r.foreR].map((f, i) => { const g = grp(f, 0, -.2, .06); g.scale.setScalar(1.45); P(g, ext('nxTalBlade', s => { s.moveTo(-.03, 0); s.lineTo(-.04, .3); s.lineTo(0, .48); s.lineTo(.05, .28); s.lineTo(.03, 0); s.lineTo(-.03, 0); }, .015, .005, 0), bl, [0, 0, 0], 1, [PI, 0, 0]); P(g, U.rbox, leather, [0, .02, -.02], [.08, .12, .06]); return g; });
     r.armL.rotation.set(-.2, 0, -.3); r.foreL.rotation.x = -.7; r.armR.rotation.set(-.2, 0, .3); r.foreR.rotation.x = -.7;
     r.style = 'swing'; r.theme = Up ? 0xff5a2a : 0x8a6aff;
     return h;
@@ -317,7 +317,7 @@ export const MODELS = {
     const fb = P(r.handR, U.ico, glow(Up ? 0x5fe0ff : 0xff6a1a, 2.4), [0, -.1, .06], .07); P(r.handR, U.sph, M(Up ? 0x5fe0ff : 0xff5a1a, { e: 1, ec: Up ? 0x5fe0ff : 0xff3a0a, t: .25, add: 1 }), [0, -.11, .06], .11); r.pulse = [fb];
     // osito Tibbers en la mano izquierda
     const fur = Up ? M(0x2e3a52, { m: .5, r: .4 }) : M(0x4e2f1f, { r: .95 }), tan = Up ? GOLD : M(0x9a6a44, { r: .9 });
-    const tb = grp(r.handL, 0, -.14, .08); tb.rotation.set(-.4, 0, .2); tb.scale.setScalar(1.45);
+    const tb = grp(r.handL, 0, -.06, .1); tb.rotation.set(1.4, 0, .15); tb.scale.setScalar(1.9);
     P(tb, U.sph, fur, [0, -.05, 0], [.1, .12, .09]); P(tb, U.sph, tan, [0, -.05, .06], [.06, .07, .04]);
     P(tb, U.sph, fur, [0, .1, .01], [.09, .08, .08]); P(tb, U.sph, tan, [0, .08, .07], [.04, .03, .03]);
     P(tb, merged('nxTedEars', () => [-1, 1].flatMap(sx => [X(U.sph, [sx * .07, .17, 0], [0, 0, 0], .035), X(U.sph, [sx * .1, -.04, .01], [0, 0, 0], [.035, .06, .035]), X(U.sph, [sx * .05, -.17, .02], [0, 0, 0], [.04, .05, .04])])), fur);

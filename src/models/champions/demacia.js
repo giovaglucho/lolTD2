@@ -73,7 +73,7 @@ export const MODELS = {
     cape(r, cl, { rT: .34, rM: .4, rB: .5, l1: .55, l2: .8, arc: 2.5, trim });
     r.weapon = sword(r.handR, { len: 1.35, w: .24, blade: Up ? M(0xf4f8ff, { m: .9, r: .14, e: .35, ec: 0x8fd8ff }) : metal(0xe6edf7, .18), guard: trim, grip: M(0x3a2414, { r: .7 }), glow: Up ? 0x8fe8ff : 0 });
     P(r.weapon, merged('dmGarGuard', () => [-1, 1].map(sx => X(U.pyr, [sx * .2, 0, .14], [0, 0, sx * 1.2], [.04, .16, .03]))), trim);
-    r.armR.rotation.set(-.35, 0, .3); r.foreR.rotation.x = -1.85; r.weapon.rotation.set(.25, .55, 0);
+    r.armR.rotation.set(-.2, 0, .8); r.foreR.rotation.x = -1.4; r.weapon.rotation.set(.2, .9, 0);
     r.style = 'swing'; r.holdR = true; r.theme = Up ? 0xffe08a : 0x7fc0ff;
     return h;
   },
@@ -146,10 +146,10 @@ export const MODELS = {
     P(sp, ext('dmJarBlade', s => { s.moveTo(-.07, 0); s.lineTo(-.09, .25); s.lineTo(0, .62); s.lineTo(.09, .25); s.lineTo(.07, 0); s.lineTo(.18, -.06); s.lineTo(.22, .12); s.lineTo(.12, .06); s.lineTo(0, .02); s.lineTo(-.07, 0); }, .03, .01, 0), Up ? metal(0x2a2a30, .3) : metal(0xe6edf7, .18), [0, 1.27, 0]);
     P(sp, merged('dmJarLanceG', () => [X(U.cyl, [0, 1.22, 0], [0, 0, 0], [.07, .08, .07]), X(U.sph, [0, 1.3, 0], [0, 0, 0], [.08, .05, .05]), X(U.cone, [0, -.7, 0], [PI, 0, 0], [.04, .1, .04]), ...[-1, 1].map(sx => X(U.pyr, [sx * .1, 1.16, 0], [0, 0, sx * 1.9], [.025, .14, .04]))]), gold);
     if (Up) P(sp, ext('dmJarEdge', s => { s.moveTo(-.075, .05); s.lineTo(-.085, .25); s.lineTo(0, .58); s.lineTo(-.03, .25); s.lineTo(-.04, .05); }, .035, .004, 0), glow(0xff5a2a, 2.5), [0, 1.27, 0]);
-    r.weapon = sp;
-    r.armR.rotation.set(-.25, 0, .25); r.foreR.rotation.x = -.85;
+    sp.scale.setScalar(.78); r.weapon = sp;
+    r.armR.rotation.set(-.25, 0, .5); r.foreR.rotation.x = -.85;
     r.style = 'thrust'; r.holdR = true; r.theme = Up ? 0xff6a3a : 0xffd36a;
-    r.anim = (m, rr, st) => { const a = st.atk >= 0 ? Math.min(1, st.atk) : -1; if (a >= 0) thrust(rr, a); hold(rr, 'R', sp, a >= 0 ? .15 + 1.35 * lunge(a) : .12, a >= 0 ? 0 : -.05); };
+    r.anim = (m, rr, st) => { const a = st.atk >= 0 ? Math.min(1, st.atk) : -1; if (a >= 0) thrust(rr, a); hold(rr, 'R', sp, a >= 0 ? .15 + 1.35 * lunge(a) : .22, a >= 0 ? 0 : -.5); };
     return h;
   },
 
@@ -169,6 +169,7 @@ export const MODELS = {
     const hk = hairM(Up ? 0xf4f6ff : 0x1c1826); hairCap(r, hk, { tilt: -.5, w: 1.06, d: 1.05, h: 1.02 });
     P(r.head, merged('dmFioBob', () => [-1, 1].map(sx => X(U.sph, [sx * .2, .14, -.03], [0, 0, sx * .2], [.1, .17, .17]))), hk);
     P(r.head, tube('dmFioBang', [[-.05, .44, .16], [.08, .38, .25], [.16, .26, .26], [.2, .12, .22]], taper(.07, .03), 12, 6), hk);
+    r.tails = [P(r.head, tube('dmFioPony', [[0, .38, -.12], [0, .42, -.3], [0, .25, -.42], [0, -.05, -.4], [0, -.3, -.34]], taper(.09, .03, .1, 16), 18, 7), hk)];
     face(r, skin, { mw: .65, mouth: M(0xb05060, { r: .5 }) });
     if (Up) P(r.head, U.rbox, M(0x15151c, { m: .5, r: .2 }), [0, .19 * hs, .235 * hs], [.22, .05, .03]), P(r.head, U.box, neon, [0, .19 * hs, .25 * hs], [.2, .012, .01]);
     // estoque con cazoleta
@@ -180,9 +181,9 @@ export const MODELS = {
     P(rp, U.cone, Up ? neon : metal(0xeef3fa, .14), [0, 1.22, 0], [.014, .08, .014]);
     r.weapon = rp;
     r.armR.rotation.set(-.55, 0, .25); r.foreR.rotation.x = -.7;
-    r.armL.rotation.set(.25, 0, -.45); r.foreL.rotation.x = -1.6;                       // mano en la cadera
+    r.armL.rotation.set(.35, 0, -.4); r.foreL.rotation.x = -.5;
     r.style = 'thrust'; r.holdR = true; r.holdL = true; r.theme = Up ? 0xff3a6a : 0x9fb8ff;
-    r.anim = (m, rr, st) => { const a = st.atk >= 0 ? Math.min(1, st.atk) : -1; if (a >= 0) thrust(rr, a, 1.02); hold(rr, 'R', rp, a >= 0 ? 2.3 - .75 * lunge(a) : 2.3, a >= 0 ? 0 : -.3); };
+    r.anim = (m, rr, st) => { const a = st.atk >= 0 ? Math.min(1, st.atk) : -1; if (a >= 0) thrust(rr, a, 1.02); hold(rr, 'R', rp, a >= 0 ? 1.0 + .55 * lunge(a) : 1.0, a >= 0 ? 0 : -.75); };
     return h;
   },
 
@@ -241,14 +242,14 @@ export const MODELS = {
     face(r, skin, { mw: .7, mouth: M(0xb06058, { r: .5 }) });
     cape(r, cloth(Up ? 0x8a2410 : 0x24386a, 1), { rT: .25, rM: .29, rB: .34, l1: .45, l2: .5, arc: 2.3, trim: gold });
     // ballesta de repetición en el antebrazo
-    const cb = grp(r.foreR, 0, -.18, .02);
+    const cb = grp(r.foreR, 0, -.18, .02); cb.scale.setScalar(1.3);
     P(cb, U.rbox, leather, [0, 0, .05], [.08, .26, .1]);
     P(cb, tube('dmQuiBow', [[-.24, -.12, .1], [-.12, -.2, .12], [0, -.22, .13], [.12, -.2, .12], [.24, -.12, .1]], spindle(.025, .012), 14, 6), Up ? M(0xffa040, { m: .6, r: .3, e: .6, ec: 0xff5a10 }) : metal(0xc8d2e4, .3));
     P(cb, merged('dmQuiBolt', () => [X(U.cyl, [0, -.12, .14], [0, 0, 0], [.012, .3, .012]), X(U.cone, [0, -.3, .14], [PI, 0, 0], [.022, .06, .022]), X(U.box, [0, -.26, .05], [0, 0, 0], [.05, .1, .04])]), gold);
     r.weapon = cb;
     r.armR.rotation.set(-.6, 0, .25); r.foreR.rotation.x = -.85;
     // Valor
-    const vb = grp(r.root, -.55, 1.65, .15), vbody = grp(vb); vbody.scale.setScalar(1.35);
+    const vb = grp(r.root, -.7, 1.9, .1), vbody = grp(vb); vbody.scale.setScalar(1.35);
     const fW = M(Up ? 0xffb03a : 0x2f4a7a, { r: .7, e: Up ? .9 : 0, ec: 0xff6a10 }), fH = M(Up ? 0xffe28a : 0xf4f2ee, { r: .8, e: Up ? .6 : 0, ec: 0xffa020 }), beak = M(0xf2c23a, { r: .4 });
     P(vbody, U.sph, fW, [0, 0, 0], [.1, .09, .2]);
     P(vbody, U.sph, fH, [0, .06, .17], [.075, .075, .08]);
@@ -261,7 +262,7 @@ export const MODELS = {
     r.valor = { g: vb, body: vbody, wings: vw };
     r.anim = (m, rr, st, t) => {
       const v = rr.valor, a = st.atk >= 0 ? Math.min(1, st.atk) : -1, dive = a >= 0 ? kf(a, 0, [[0, 0], [.3, .2], [.55, 1], [.8, .4], [1, 0]]) : 0;
-      v.g.position.set(-.55 + Math.sin(t * 1.3 + m.phase) * .12, 1.65 + Math.sin(t * 2.1) * .08 - dive * .6, .15 + dive * 1.4);
+      v.g.position.set(-.7 + Math.sin(t * 1.3 + m.phase) * .12, 1.9 + Math.sin(t * 2.1) * .08 - dive * .6, .15 + dive * 1.4);
       v.body.rotation.set(-.15 + dive * .6, Math.sin(t * 1.3) * .3, Math.sin(t * 1.3 + 1) * .2);
       const fl = Math.sin(t * 11 + m.phase) * .7; v.wings.forEach(w => { w.rotation.z = fl; });
       if (a >= 0) { rr.armR.rotation.x = kf(a, B(rr.armR, 0), [[0, null], [.25, -1.45], [.6, -1.45], [1, null]]); rr.foreR.rotation.x = kf(a, B(rr.foreR, 0), [[0, null], [.25, -.1], [.38, -.25], [.6, -.1], [1, null]]); }
@@ -273,7 +274,7 @@ export const MODELS = {
   // ═════════════════════ SHYVANA ═════════════════════
   shyvana(Up) {
     if (Up) { // Forma de dragón
-      const d = drake({ elem: 'shy', scale: 1.25, body: 0x8a1e2a, belly: 0xff8a2a, bellyGlow: true, wing: 0x5a0e1a, horn: 0x2a1418, glow: 0xffa030, wingE: .25, dark: 0x2a0c10 });
+      const d = drake({ elem: 'shy', scale: .75, body: 0x8a1e2a, belly: 0xff8a2a, bellyGlow: true, wing: 0x5a0e1a, horn: 0x2a1418, glow: 0xffa030, wingE: .25, dark: 0x2a0c10 });
       const r = d.rig;
       P(r.head, merged('dmShyCrest', () => { const o = []; for (let i = 0; i < 5; i++) o.push(X(U.cone, [0, .2 - i * .02, -.05 - i * .09], [-1.2, 0, 0], [.035, .2 - i * .025, .02])); return o; }), M(0xff6a1a, { e: 1.4, ec: 0xff4a0a, r: .5 }));
       P(r.head, U.sph, M(0xffb040, { e: 2.2, ec: 0xff7a1a, t: .45, add: 1 }), [0, -.02, .5], [.1, .08, .12]);
@@ -293,6 +294,11 @@ export const MODELS = {
     for (const hd of [r.handL, r.handR]) P(hd, merged('dmShyClaw', () => [-1, 0, 1].map(i => X(U.cone, [i * .04, -.1, .06], [PI - .5, 0, i * .2], [.018, .14, .018]))), claw);
     P(r.hips, merged('dmShyTasset', () => [-1, 0, 1].map(i => X(U.rbox, [i * .15, -.16, .05 - Math.abs(i) * .1], [-.12, i * .5, i * .12], [.15, .28, .03]))), scale);
     coat(r, cloth(0x5a1424, 1), { l: .5, rT: .2, rB: .3, arc: 2.6, trim: gold });
+    // cola de dragón con púas + alitas óseas a la espalda
+    const tl = grp(r.hips, 0, -.02, -.12); r.tails2 = tl;
+    P(tl, tube('dmShyTail', [[0, 0, 0], [0, -.05, -.25], [0, -.02, -.5], [0, .1, -.72], [0, .26, -.85]], taper(.085, .012), 16, 8), scale);
+    P(tl, merged('dmShyTailSpk', () => [0, 1, 2, 3].map(i => X(U.cone, [0, .02 + i * .045, -.25 - i * .17], [-.4, 0, 0], [.03, .1 - i * .015, .03]))), gold);
+    P(r.torso, merged('dmShyWings', () => [-1, 1].flatMap(sx => [0, 1, 2].map(i => X(U.pyr, [sx * (.14 + i * .07), .46 + i * .06, -.2 - i * .02], [-.35, 0, -sx * (.5 + i * .35)], [.03, .3 - i * .05, .012])))), scaleD);
     // melena roja larga y salvaje + cuernos
     const hr = hairM(0xd8341c); hairCap(r, hr, { tilt: -.42, w: 1.08, h: 1.05 }); bangs(r, hr, 6, { len: .16, spread: 1.1 });
     r.tails = [P(r.head, tube('dmShyHair', [[0, .36, -.12], [0, .2, -.32], [0, -.1, -.38], [0, -.42, -.4], [0, -.7, -.5]], taper(.22, .05, .25, 18), 22, 9), hr)];
@@ -321,7 +327,7 @@ export const MODELS = {
     r.braids = [-1, 1].map(sx => { const bg = grp(r.head, sx * .22 * hs, .3 * hs, -.08 * hs); bg.scale.x = sx; P(bg, tailG, hb); P(bg, U.sph, Up ? cloth(0xff6aa8) : cloth(0x3a5ac0), [.04, -.02, -.02], [.06, .05, .05]); return bg; });
     face(r, skin, { mw: .6, mouth: M(0x6a3a5a, { r: .6 }) });
     // martillo enorme
-    const hm = grp(r.handR, 0, -.03, .02);
+    const hm = grp(r.handR, 0, -.03, .02); hm.scale.setScalar(1.35);
     P(hm, U.cyl, M(0x6a4428, { r: .65 }), [0, .2, 0], [.035, 1.05, .035]);
     P(hm, U.cyl, armor, [0, .82, 0], [.2, .48, .2], [0, 0, PI / 2]);
     P(hm, merged('dmPopHamG', () => [X(U.cyl, [.25, .82, 0], [0, 0, PI / 2], [.215, .05, .215]), X(U.cyl, [-.25, .82, 0], [0, 0, PI / 2], [.215, .05, .215]), X(U.cyl, [0, .82, 0], [0, 0, PI / 2], [.205, .08, .205]), X(U.sph, [0, -.32, 0], [0, 0, 0], .05), ...emblem([0, .82, .2], 1)]), gold);
@@ -359,10 +365,10 @@ export const MODELS = {
     P(sp, ext('dmXinBlade', s => { s.moveTo(-.05, 0); s.quadraticCurveTo(-.09, .2, 0, .5); s.quadraticCurveTo(.06, .22, .05, 0); s.lineTo(-.05, 0); }, .025, .008, 0), Up ? metal(0xd8dde6, .2) : metal(0xe6edf7, .18), [0, 1.36, 0]);
     P(sp, merged('dmXinSpG', () => [X(U.cyl, [0, 1.32, 0], [0, 0, 0], [.05, .1, .05]), X(U.cone, [0, -.8, 0], [PI, 0, 0], [.035, .1, .035]), X(U.ring, [0, 1.27, 0], [PI / 2, 0, 0], [.06, .06, 1.2])]), Up ? trim : gold);
     P(sp, merged('dmXinTassel', () => [0, 1, 2, 3, 4].map(i => X(U.cone, [Math.cos(i * 1.26) * .03, 1.17, Math.sin(i * 1.26) * .03], [PI, 0, Math.cos(i * 1.26) * .2], [.035, .2, .035]))), cloth(0xd02020, 1));
-    r.weapon = sp;
-    r.armR.rotation.set(-.25, 0, .25); r.foreR.rotation.x = -.85;
+    sp.scale.setScalar(.8); r.weapon = sp;
+    r.armR.rotation.set(-.25, 0, .5); r.foreR.rotation.x = -.85;
     r.style = 'thrust'; r.holdR = true; r.theme = Up ? 0xff5a3a : 0xffd36a;
-    r.anim = (m, rr, st) => { const a = st.atk >= 0 ? Math.min(1, st.atk) : -1; if (a >= 0) thrust(rr, a); hold(rr, 'R', sp, a >= 0 ? .2 + 1.3 * lunge(a) : .18, a >= 0 ? 0 : -.08); };
+    r.anim = (m, rr, st) => { const a = st.atk >= 0 ? Math.min(1, st.atk) : -1; if (a >= 0) thrust(rr, a); hold(rr, 'R', sp, a >= 0 ? .2 + 1.3 * lunge(a) : .25, a >= 0 ? 0 : -.5); };
     return h;
   },
 
@@ -382,7 +388,7 @@ export const MODELS = {
     P(r.head, merged('dmVayGlass', () => [...[-1, 1].map(sx => X(U.cyl, [sx * .085, .2, .25], [PI / 2, 0, 0], [.055, .02, .045])), X(U.box, [0, .21, .255], [0, 0, 0], [.06, .012, .01])]), M(Up ? 0x7fe8ff : 0xd0202a, { m: .5, r: .1, e: Up ? 1.6 : .5, ec: Up ? 0x7fe8ff : 0xa01020 }));
     face(r, skin, { mw: .6, mouth: M(0x9a4050, { r: .5 }) });
     // ballesta de muñeca
-    const cb = grp(r.foreR, 0, -.2, .03);
+    const cb = grp(r.foreR, 0, -.2, .03); cb.scale.setScalar(1.2);
     P(cb, U.rbox, leather, [0, 0, .05], [.09, .3, .12]);
     P(cb, tube('dmVayBow', [[-.3, -.1, .12], [-.15, -.2, .15], [0, -.23, .16], [.15, -.2, .15], [.3, -.1, .12]], spindle(.03, .012), 14, 6), silver);
     P(cb, merged('dmVayBolt', () => [X(U.cyl, [0, -.14, .17], [0, 0, 0], [.014, .34, .014]), X(U.cone, [0, -.34, .17], [PI, 0, 0], [.026, .08, .026]), X(U.box, [0, -.06, .1], [0, 0, 0], [.06, .1, .06])]), Up ? glow(0x9ff0ff, 2) : silver);
