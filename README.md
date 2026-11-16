@@ -1,18 +1,41 @@
 # Rift Legion TD
 
-Un *Legion TD 2* ambientado en **League of Legends**, hecho con Three.js + Vite.
+MVP de un **Legion TD 2** ambientado en **League of Legends**, hecho con Three.js + Vite + Node (WebSocket).
 
-- Coloca campeones (Garen, Ashe, Annie, Lux, Malphite, Soraka, Darius, Jinx, Leona, Teemo, Yasuo, Ezreal) en tu plataforma.
-- Contrata **Poros** (economía) y envía **mercenarios** (Cangrejos, Larvas del Vacío, Heraldo, Cho'Gath, Dragón Ancestral…) a la línea rival.
-- Sobrevive 20 oleadas de monstruos de la Grieta (Gromp, Krugs, Dragones, Heraldo, Barón Nashor…) y protege tu Nexo.
+## Modos
+- **Contra la IA**: 1 vs 1 o 2 vs 2 (con un aliado IA), dificultades *Fácil, Normal, Difícil, Locura*.
+- **En línea 2 vs 2** (servidor autoritativo):
+  - **Clásico**: sin puntuación; si en 15 s no hay 4 jugadores, se completa con bots.
+  - **Ranked**: 4 jugadores reales, MMR Elo por equipo y ligas Hierro → Retador. Clasificación top 10.
+  - Si alguien se desconecta, un bot toma su línea. Botón *Salir* = rendición.
 
+## Mecánicas (adaptadas de Legion TD 2)
+| Legion TD 2 | Rift Legion |
+|---|---|
+| Luchadores en tu cuadrícula | 12 campeones (Garen, Ashe, Annie, Lux, Malphite, Soraka, Darius, Jinx, Leona, Teemo, Yasuo, Ezreal) con habilidades |
+| Mejorar unidad | Skin de prestigio (Garen Dios-Rey, Jinx Star Guardian…): ×1.85 vida y daño |
+| Trabajadores → mythium | **Poros** → **Esencia Hextech** |
+| Mercenarios (mythium, +ingresos) | Cangrejo, Larvas del Vacío, Raptores, Asedio, Heraldo, Cho'Gath, Dragón Ancestral |
+| Rey compartido + mejoras | **Nexo** del equipo: Vida / Ataque / Regeneración |
+| 20 oleadas | Súbditos, campamentos de jungla, dragones, Heraldo, Dragón Ancestral, Barón Nashor |
+| Venta 100 % en la misma ronda | Reembolso completo si vendes en la ronda de compra, 50 % después |
+| Valor recomendado | Indicador ⚔ valor vs. recomendado |
+
+## Ejecutar
 ```bash
 npm install
-npm run dev      # http://localhost:5173  (?q=low para equipos modestos)
-npm run build
-npm run sim      # simulación headless de equilibrado (sin render)
+npm start            # compila y levanta el servidor en http://localhost:8787 (juego + multijugador)
+npm run dev          # desarrollo (Vite :5173, con proxy /ws → :8787; arranca también `npm run server`)
+npm run sim -- normal dificil 2 6   # simulación headless de equilibrado: IA A vs IA B, carriles, partidas
 ```
+`?q=low` reduce la calidad gráfica. Variables del servidor: `PORT`, `BOT_FILL_MS`, `DATA_DIR`, `SIM_SPEED` (pruebas).
 
-Controles: clic = colocar · clic der./X = vender · 1-9,0,-,= elegir campeón · Espacio = listo · Tab = ver línea rival · WASD/rueda = cámara · F = velocidad · P = pausa · B = comprar poro.
+Controles: clic colocar/seleccionar · U mejorar · X / clic der. vender · 1-9,0,-,= campeones · Espacio listo · Tab/C cambiar de línea · WASD/rueda cámara · F velocidad y P pausa (solo vs IA).
 
-Arquitectura: `src/sim.js` (simulación pura, sin three), `src/models.js` (campeones/monstruos procedurales), `src/world.js` (escena, texturas procedurales, post-proceso), `src/fx.js` (partículas, rayos, texto), `src/game.js` (render + input), `src/ui.js` (HUD).
+## Arquitectura
+- `src/sim.js` simulación determinista sin three.js (la usan el navegador y el servidor) + serialización.
+- `src/ai.js` IA por dificultad. `server/server.js` estáticos + WebSocket, matchmaking, MMR (`server/data/ratings.json`).
+- `src/net.js` conexión y `NetSim` (espejo del estado del servidor con la misma API que `Sim`).
+- `src/models.js` modelos procedurales, `src/world.js` escenario, `src/fx.js` efectos, `src/game.js` render/entrada, `src/ui.js` HUD y menús.
+
+Limitaciones del MVP: identidad por nombre (sin cuentas), un único servidor en memoria, sin reconexión a la misma partida, una sola "legión" de campeones (sin elegir facción).
