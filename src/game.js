@@ -42,12 +42,12 @@ export class Game {
   // ───── entidades ─────
   makeView(e) {
     const d = e.def, kind = e.kind === 'fighter' ? d.id : d.k, tint = e.owner === 0 ? 'blue' : e.owner === 1 ? 'red' : 'red';
-    const model = buildModel(kind, tint); model.phase = Math.random() * 6.28; const group = new THREE.Group(); group.add(model.g);
-    const sc = e.kind === 'fighter' ? 1.3 : d.s; model.g.scale.setScalar(sc);
+    const model = buildModel(kind, tint); model.phase = Math.random() * 6.28; const vr = e.kind === 'fighter' ? 0 : (Math.random() - .5) * .2;  const group = new THREE.Group(); group.add(model.g);
+    const sc = (e.kind === 'fighter' ? 1.3 : d.s) * (1 + vr); model.g.scale.setScalar(sc);
     const box = new THREE.Box3().setFromObject(model.g); const h = box.max.y;
     const side = e.kind === 'fighter' ? e.lane : (e.owner === 'wave' ? 'g' : e.owner);
     const col = side === 0 ? 0x4aa8ff : side === 1 ? 0xff5a4a : 0xb04aff;
-    const ring = new THREE.Mesh(this.hpGeo, new THREE.MeshBasicMaterial({ map: this.ringTex, color: col, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: e.kind === 'fighter' ? .85 : .6 }));
+    const ring = new THREE.Mesh(this.hpGeo, new THREE.MeshBasicMaterial({ map: this.ringTex, color: col, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: e.kind === 'fighter' ? .6 : .35 }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = .03; ring.scale.setScalar(Math.max(1.6, e.radius * 3.4)); group.add(ring);
     const bar = new THREE.Group(); const w = Math.max(1.3, Math.min(3.4, h * .9)); const bg = new THREE.Mesh(this.hpGeo, this.hpBg), fg = new THREE.Mesh(this.hpGeo, this.hpM[side]);
     bg.scale.set(w + .08, .17, 1); fg.scale.set(w, .12, 1); bg.renderOrder = 10; fg.renderOrder = 11; bar.add(bg, fg); bar.position.y = h + .6; group.add(bar);
@@ -77,7 +77,7 @@ export class Game {
       // flash al recibir daño
       if (e.flash > 0 && !v.flashed) { v.flashed = true; v.model.g.traverse(o => { if (o.isMesh && o.material.emissive) { o.userData.oe = o.material.emissiveIntensity; } }); }
       v.selected = this.selEnt === e;
-      v.ring.material.opacity = (e.kind === 'fighter' ? .85 : .55) * (v.selected ? 1 : .8) + (v.selected ? Math.sin(this.time * 8) * .15 : 0);
+      v.ring.material.opacity = (e.kind === 'fighter' ? .6 : .35) * (v.selected ? 1.6 : 1) + (v.selected ? Math.sin(this.time * 8) * .15 : 0);
     }
     for (const [id, v] of this.views) if (!alive.has(id)) { this.world.scene.remove(v.group); this.views.delete(id); }
   }
@@ -130,7 +130,7 @@ export class Game {
         case 'heal': { const p = this.pos3(ev.t.lane, ev.t.x, ev.t.z, 0.4); fx.ring(p.x, p.z, 1.6, 0x7dffb0); fx.burst(p.x, 0.6, p.z, { n: 14, color: 0x7dffb0, speed: 1.2, up: 4, life: .9, size: .5, g: -1 }); fx.text(p.x, 2.4, p.z, '+' + Math.round(ev.amt), 'heal'); sfx.heal(); break; }
         case 'poison': { const p = this.pos3(ev.t.lane, ev.t.x, ev.t.z, 1.5); fx.burst(p.x, 1.4, p.z, { n: 12, color: FXCOL[ev.fx] ?? 0x8aff5a, speed: 2, up: 2, life: .6, size: .6 }); break; }
         case 'dash': { const a = this.pos3(ev.e.lane, ev.x0, ev.z0, 1), b = this.pos3(ev.e.lane, ev.x1, ev.z1, 1); fx.bolt(a, b, 0xcfefff, .3, .25); fx.ring(b.x, b.z, 2, 0xcfefff); sfx.magic(); break; }
-        case 'cast': { const e = ev.e, p = this.pos3(e.lane, e.x, e.z, 0); if (!['heal'].includes(ev.a.type)) fx.ring(p.x, p.z, 1.3, FXCOL[ev.a.fx] ?? 0xffffff, { dur: .4, op: .6 }); if (e.lane === this.cam.view && e.kind === 'fighter') fx.text(p.x, 3.4, p.z, ev.a.name || '', 'skill'); break; }
+        case 'cast': { const e = ev.e, p = this.pos3(e.lane, e.x, e.z, 0); if (!['heal'].includes(ev.a.type)) fx.ring(p.x, p.z, 1.3, FXCOL[ev.a.fx] ?? 0xffffff, { dur: .4, op: .6 });  break; }
         case 'nexusShot': { const nx = this.pos3(ev.side, 0, LANE.nexusZ, 6.5), t = this.pos3(ev.side, ev.t.x, ev.t.z, 1.5); fx.bolt(nx, t, ev.side ? 0xff7a5a : 0x7ad0ff, .22, .22); sfx.nexus(); break; }
         case 'place': { const e = ev.e, p = this.pos3(e.lane, e.x, e.z, .3); fx.ring(p.x, p.z, 1.6, 0xffe08a); fx.burst(p.x, .4, p.z, { n: 18, color: 0xffe08a, speed: 3, up: 4, life: .7, size: .6 }); const v = this.views.get(e.id); if (v) v.appear = 0; break; }
         case 'sell': { const e = ev.e, p = this.pos3(e.lane, e.x, e.z, 1); fx.burst(p.x, 1, p.z, { n: 14, color: 0xffd060, speed: 3, up: 4, life: .7, size: .5 }); fx.text(p.x, 2.5, p.z, '+' + e.def.cost, 'gold'); break; }

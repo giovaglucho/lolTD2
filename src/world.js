@@ -21,7 +21,7 @@ export function makeTextures() {
   const grass = pixelTex(512, (u, v) => {
     const n = wrapfbm(nf, u, v, 4, 5), n2 = wrapfbm(nf2, u, v, 16, 3), blade = wrapfbm(nf2, u * 3 % 1, v * 40 % 1, 8, 2);
     const k = .45 + n * .6 + (n2 - .5) * .25 + (blade - .5) * .12;
-    return [(52 + 62 * k) | 0, (96 + 104 * k) | 0, (34 + 40 * k) | 0];
+    return [(58 + 60 * k) | 0, (92 + 92 * k) | 0, (34 + 40 * k) | 0];
   }, 28);
   const grassBump = pixelTex(256, (u, v) => { const n = wrapfbm(nf2, u, v, 24, 3); const c = (n * 255) | 0; return [c, c, c]; }, 28, false);
   const stone = pixelTex(512, (u, v, x, y) => {
@@ -51,7 +51,7 @@ export function createWorld(canvas) {
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   const scene = new THREE.Scene(); const SKY = 0x9fc7e8;
-  scene.fog = new THREE.FogExp2(0xa9cde6, .0105);
+  scene.fog = new THREE.FogExp2(0xb4d0e4, .0085);
   const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 1, 600);
   const tx = makeTextures();
 

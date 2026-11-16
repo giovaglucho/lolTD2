@@ -43,7 +43,7 @@ kbd { display:inline-block; font:600 10px monospace; padding:1px 5px; margin-lef
 .ab { font-size:12px; color:#cfe0f5; line-height:1.35; border-top:1px solid #3a3a4a; padding-top:6px; margin-top:4px; } .ab b { color:#9fe4ff; }
 #info button { margin-top:8px; width:100%; padding:7px; background:#5a1a14; color:#ffd8cc; border:1px solid #a04030; font-weight:700; }
 #info button:hover { background:#7a2218; }
-#right { position:absolute; right:14px; top:140px; width:236px; padding:10px 10px 12px; background:linear-gradient(180deg,rgba(14,30,56,.92),rgba(7,16,34,.94)); border:1px solid #5c4a24; border-right:3px solid var(--gold); }
+#right { position:absolute; right:14px; top:120px; width:214px; padding:10px 10px 12px; background:linear-gradient(180deg,rgba(14,30,56,.92),rgba(7,16,34,.94)); border:1px solid #5c4a24; border-right:3px solid var(--gold); }
 #right h3 { margin:0 0 8px; font:700 13px Georgia,serif; color:var(--gold); letter-spacing:2px; text-transform:uppercase; } #right h3 small { display:block; font:11px Arial; letter-spacing:0; color:#8fa6c4; text-transform:none; }
 #mercs { display:flex; flex-direction:column; gap:5px; }
 .mc { display:flex; align-items:center; gap:8px; padding:4px 8px 4px 4px; background:#0a1426; border:1px solid #4a3e22; cursor:pointer; position:relative; }

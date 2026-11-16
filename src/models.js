@@ -118,7 +118,7 @@ const CHAMPS = {
   darius(d) {
     const h = humanoid({ armor: 0x6a1515, cloth: 0x2a1212, accent: 0xaaaaaa, s: 1.22, metal: .85, rough: .35, skin: 0xcaa07c }); const { rig: r, mats } = h, s = r.s;
     sph(r.armL, mats.armor, .26 * s, 0, .05 * s, 0, .2 * s, .26 * s); sph(r.armR, mats.armor, .26 * s, 0, .05 * s, 0, .2 * s, .26 * s);
-    const helm = sph(r.head, M(0x333340, { m: .9, r: .3 }), .25 * s, 0, .05 * s, 0, .22 * s, .25 * s);
+    const helm = sph(r.head, M(0x4a4a58, { m: .8, r: .45 }), .23 * s, 0, .06 * s, 0, .17 * s, .23 * s);
     for (const sx of [-1, 1]) { const sp = cone(helm, M(0xaaaaaa, { m: .9 }), .04, .5); sp.position.set(sx * .8, .5, 0); sp.rotation.z = -sx * .7; }
     r.weapon = weapon.axe(r.handR, s, M(0xb8b8c4, { m: .95, r: .22 }));
     box(r.body, M(0x2a1212, { r: .85, ds: 1 }), .6 * s, .9 * s, .04, 0, 1.3 * s, -.28 * s);
@@ -168,6 +168,7 @@ const CHAMPS = {
 };
 
 // ───────── criaturas ─────────
+const WING = (() => { const sh = new THREE.Shape(); sh.moveTo(0, .1); sh.lineTo(.35, .55); sh.lineTo(.7, .62); sh.lineTo(1, .5); sh.lineTo(.82, .15); sh.lineTo(.92, -.15); sh.lineTo(.6, -.05); sh.lineTo(.62, -.4); sh.lineTo(.3, -.2); sh.lineTo(.12, -.45); sh.lineTo(0, -.1); const g = new THREE.ShapeGeometry(sh); g.rotateX(-Math.PI / 2); return g; })();
 function eyes(p, c, r, x, y, z, sep) { for (const sx of [-1, 1]) sph(p, glow(c, 3), r, sx * sep + x, y, z); }
 function minion(caster, tint) {
   const g = new THREE.Group(), body = grp(g); const col = tint, m = M(col, { r: .5, m: .3 }), tan = M(0xe8d9b0, { r: .7 });
@@ -203,7 +204,7 @@ function drake(col, belly, flame, o = {}) {
   const neck = grp(torso, 0, .2, .8); neck.rotation.x = -.5; cyl(neck, m, .22, .9, 0, .35, 0, .16);
   const head = grp(body, 0, 1.75, 1.15); sph(head, m, .3, 0, 0, 0, .24, .38); cone(head, m, .15, .5, 0, -.03, .45).rotation.x = Math.PI / 2; eyes(head, flame, .05, 0, .1, .26, .15);
   for (const sx of [-1, 1]) { const hn = cone(head, M(0xe8e0c8), .05, .45, sx * .18, .22, -.2); hn.rotation.x = -.8; hn.rotation.z = -sx * .3; }
-  const wings = []; for (const sx of [-1, 1]) { const w = grp(torso, sx * .4, .3, 0); const wm = M(col, { r: .6, ds: 1, e: o.wingE ?? 0, ec: flame }); const wp = new THREE.Mesh(G.plane, wm); wp.scale.set(1.9, 1.1, 1); wp.position.set(sx * .95, .3, -.2); wp.rotation.set(-Math.PI / 2 + .3, 0, 0); w.add(wp); cyl(w, m, .04, 1.9, sx * .9, .1, 0).rotation.z = Math.PI / 2; wings.push(w); }
+  const wings = []; for (const sx of [-1, 1]) { const w = grp(torso, sx * .4, .3, 0); const wm = M(new THREE.Color(col).multiplyScalar(.6).getHex(), { r: .7, ds: 1, e: (o.wingE ?? 0) * .3, ec: flame }); const wp = new THREE.Mesh(WING, wm); wp.scale.set(sx * 1.5, 1.0, 1); wp.position.set(sx * .1, .3, -.1); w.add(wp); cyl(w, m, .04, 1.9, sx * .9, .1, 0).rotation.z = Math.PI / 2; wings.push(w); }
   const tail = cone(torso, m, .3, 1.6, 0, -.1, -1.35); tail.rotation.x = -Math.PI / 2 - .1;
   for (const [x, z] of [[-.35, .35], [.35, .35], [-.35, -.35], [.35, -.35]]) cyl(body, m, .13, .55, x, .3, z * 1.1);
   for (let i = 0; i < 6; i++) cone(torso, M(0xe8e0c8), .06, .26, 0, .52 - i * .03, .7 - i * .3);
