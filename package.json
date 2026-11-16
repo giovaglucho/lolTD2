@@ -1,0 +1,14 @@
+{
+  "name": "rift-defenders-td",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Legion TD 2 meets League of Legends - Three.js",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "sim": "node tools/sim.mjs"
+  },
+  "dependencies": { "three": "^0.187.0", "vite": "^8.0.0" }
+}
