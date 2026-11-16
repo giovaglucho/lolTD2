@@ -1,48 +1,75 @@
 import './style.css';
 import { Game } from './game.js';
 import { UI } from './ui.js';
-import { makePortraits } from './portraits.js';
-import { initAudio } from './sfx.js';
+import { getPortrait } from './portraits.js';
+import { initAudio, setMuted } from './sfx.js';
 import { Conn } from './net.js';
+import { mountMenu, showMenu, hideMenu, showLoading, showResult, store } from './menu/index.js';
+import { LEGION_BY } from './content/index.js';
 
 const params = new URLSearchParams(location.search);
 const $ = id => document.getElementById(id);
-let game, ui, conn = null, profile = null, queued = null;
-const sel = { lanes: 2, diff: 'normal' };
+let game, ui, conn = null, online = false, lastMatch = null;
 
-function seg(id, key) { document.querySelectorAll(`#${id} button`).forEach(b => b.onclick = () => { document.querySelectorAll(`#${id} button`).forEach(x => x.classList.toggle('on', x === b)); sel[key] = isNaN(+b.dataset.v) ? b.dataset.v : +b.dataset.v; }); }
-const name = () => { const n = ($('pname').value || '').trim(); try { localStorage.setItem('rl_name', n); } catch {} return n || 'Invocador'; };
-function showMenu() { game.stop(); $('hud').classList.add('hidden'); $('end').classList.add('hidden'); $('title').classList.remove('hidden'); if (conn && conn.open) conn.send({ t: 'lb' }); }
-function renderProfile() { $('profile').innerHTML = profile ? `<b>${profile.tier}</b> · ${profile.mmr} MMR<br>Ranked ${profile.w}V/${profile.l}D · Clásico ${profile.cw}V/${profile.cl}D` : ''; }
+// ¿hay servidor multijugador? (en Vercel no; con `npm start` sí, o con una URL propia en Ajustes)
+async function probeServer() {
+  const s = store.getSettings();
+  if (s.serverUrl) { online = true; return; }
+  try { const r = await fetch('/health', { cache: 'no-store' }); online = r.ok && (await r.text()).trim() === 'ok'; } catch { online = false; }
+}
+function applySettings(s = store.getSettings()) {
+  setMuted(!s.sfx || s.volume <= 0);
+  if (game) { game.dmgNumbers = s.dmgNumbers !== false; game.camSpeed = s.camSpeed || 1; }
+  const want = s.quality === 'low' ? 'low' : 'high', cur = params.get('q') === 'low' ? 'low' : 'high';
+  if (want !== cur && game && !game.started) { params.set('q', want); location.search = params.toString(); }
+}
+const profileName = () => (store.getProfile().name || 'Invocador');
 
-async function online(mode) {
-  initAudio(); $('qstatus').textContent = 'Conectando…';
-  try {
-    if (!conn) {
-      conn = new Conn();
-      conn.on('profile', d => { profile = d.p; renderProfile(); });
-      conn.on('queue', d => { $('qstatus').innerHTML = `En cola ${d.mode === 'ranked' ? 'RANKED' : 'CLÁSICA'}: ${d.n}/4 jugadores · ${d.wait}s${d.fill != null ? ` · bots en ${d.fill}s` : ''} <button id="bLeave">Cancelar</button>`; $('bLeave').onclick = () => { conn.send({ t: 'leave' }); queued = null; $('qstatus').textContent = ''; }; });
-      conn.on('start', d => { queued = null; $('qstatus').textContent = ''; game.start({ net: { conn, info: d } }); });
-      conn.on('s', d => { if (game.sim && game.sim.net) game.sim.apply(d.s, d.ev); });
-      conn.on('end', d => { profile = d.profile; renderProfile(); const me = game.netInfo && game.netInfo.players[game.me]; const dl = d.delta[me ? me.name : ''] ; if (dl !== undefined) setTimeout(() => ui.setEndExtra(`<div class="delta ${dl >= 0 ? 'pos' : 'neg'}">${dl >= 0 ? '+' : ''}${dl} MMR</div>${profile.tier} · ${profile.mmr} MMR`), 50); });
-      conn.on('lb', d => { $('lb').innerHTML = d.list.length ? `<b style="color:#c8aa6e">CLASIFICACIÓN RANKED</b><table>${d.list.map((r, i) => `<tr><td>${i + 1}. ${r.name}</td><td>${r.tier}</td><td>${r.mmr}</td><td>${r.w}V ${r.l}D</td></tr>`).join('')}</table>` : ''; });
-      conn.on('close', () => { $('qstatus').textContent = 'Desconectado del servidor.'; if (game.sim && game.sim.net && !game.over) { ui.log('Conexión perdida.'); } conn = null; });
-    }
-    await conn.connect(); conn.send({ t: 'hello', name: name() }); conn.send({ t: 'queue', mode }); conn.send({ t: 'lb' }); queued = mode;
-  } catch (e) { $('qstatus').textContent = 'No hay servidor en línea disponible (ejecuta npm start). ' ; conn = null; }
+async function startLocal(opts) {
+  initAudio(); const lanes = opts.lanes === 4 ? 4 : 2, me = profileName();
+  const names = lanes === 4 ? [me, 'Aliado IA', 'IA Roja 1', 'IA Roja 2'] : [me, 'IA Roja'];
+  const legs = [opts.legion || 'random', ...(lanes === 4 ? [opts.allyLegion || 'random'] : []), ...(opts.enemyLegions || [])];
+  lastMatch = { mode: lanes === 4 ? '2v2' : '1v1', ranked: false, local: true, opts };
+  hideMenu();
+  game.start({ ...opts, lanes, names });
+  const sim = game.sim;
+  await showLoading({ mode: lastMatch.mode, ranked: false, players: sim.players.map((p, i) => ({ name: names[i] || p.name, legion: p.legion, team: p.team, bot: p.bot, diff: p.diff, me: i === 0 })) });
 }
 
-function boot() {
-  const portraits = makePortraits();
-  ui = new UI(portraits); game = new Game($('c'), ui); ui.bind(game); window.__game = game;
-  ui.onQuit = (fromEnd) => { if (game.sim && game.sim.net && !game.over && !fromEnd) { if (!confirm('¿Rendirse y salir de la partida?')) return; conn && conn.send({ t: 'surrender' }); } showMenu(); };
-  try { $('pname').value = localStorage.getItem('rl_name') || ''; } catch {}
-  seg('segLanes', 'lanes'); seg('segDiff', 'diff');
-  $('title').classList.add('ready');
-  $('bLocal').onclick = () => { initAudio(); name(); game.start({ lanes: sel.lanes, diff: sel.diff }); };
-  $('bClassic').onclick = () => online('classic');
-  $('bRanked').onclick = () => online('ranked');
-  if (params.get('auto')) game.start({ lanes: +params.get('lanes') || 2, diff: params.get('diff') || 'normal', legion: params.get('legion') || 'random' });
+function startOnline(mode, legion) {
+  initAudio();
+  conn ??= (() => {
+    const c = new Conn();
+    c.on('start', async d => { lastMatch = { mode: '2v2', ranked: d.ranked, local: false }; hideMenu(); game.start({ net: { conn: c, info: d } }); await showLoading({ mode: '2v2', ranked: d.ranked, players: d.players.map((p, i) => ({ ...p, me: i === d.me })) }); });
+    c.on('s', d => { if (game.sim && game.sim.net) game.sim.apply(d.s, d.ev); });
+    c.on('end', d => { lastMatch.mmrDelta = d.delta[profileName()]; });
+    c.on('close', () => { conn = null; });
+    return c;
+  })();
+  const url = store.getSettings().serverUrl; if (url) conn.url = () => url;
+  return conn.connect().then(() => { conn.send({ t: 'hello', name: profileName() }); conn.send({ t: 'queue', mode, legion: legion || store.getSettings().legion || 'random' }); return true; });
+}
+
+async function onGameOver(win, sim) {
+  const p = sim.P(game.me);
+  const res = { win, wave: Math.min(sim.wave + 1, 20), mode: lastMatch ? lastMatch.mode : '1v1', legion: p.legion, kills: p.kills, value: sim.value(game.me), mmrDelta: lastMatch && lastMatch.mmrDelta, ranked: lastMatch && lastMatch.ranked };
+  res.rewards = store.recordMatch(res);
+  await new Promise(r => setTimeout(r, 1800)); // ver la explosión del Nexo
+  await showResult(res);
+  backToMenu();
+}
+function backToMenu() { game.stop(); $('hud').classList.add('hidden'); $('end').classList.add('hidden'); showMenu(); }
+
+async function boot() {
+  ui = new UI(getPortrait); game = new Game($('c'), ui); ui.bind(game); window.__game = game;
+  game.onGameOver = onGameOver;
+  ui.onQuit = fromEnd => { if (game.sim && !game.over && !fromEnd) { if (!confirm(game.local ? '¿Abandonar la partida?' : '¿Rendirse y salir de la partida?')) return; if (!game.local && conn) conn.send({ t: 'surrender' }); } backToMenu(); };
+  await probeServer();
+  mountMenu({ startLocal, startOnline, onlineAvailable: () => online, applySettings: s => applySettings(s) });
+  applySettings();
+  $('boot').remove();
+  if (params.get('auto')) startLocal({ lanes: +params.get('lanes') || 2, diff: params.get('diff') || 'normal', legion: params.get('legion') || 'random' });
+  else showMenu();
   let last = performance.now();
   const loop = now => { const dt = (now - last) / 1000; last = now; game.frame(dt); requestAnimationFrame(loop); };
   requestAnimationFrame(loop);

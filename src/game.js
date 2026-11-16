@@ -45,7 +45,7 @@ export class Game {
       this.local = false;
     } else {
       const n = opts.lanes === 4 ? 4 : 2; this.makeWorld(n); this.me = 0; this.netInfo = null; this.local = true;
-      const diff = opts.diff || 'normal', names = n === 4 ? ['Tú', 'Aliado IA', 'IA Roja 1', 'IA Roja 2'] : ['Tú', 'IA Roja'];
+      const diff = opts.diff || 'normal', names = opts.names || (n === 4 ? ['Tú', 'Aliado IA', 'IA Roja 1', 'IA Roja 2'] : ['Tú', 'IA Roja']);
       const legs = [opts.legion || 'random', ...(n === 4 ? [opts.allyLegion || 'random'] : []), ...(opts.enemyLegions || [])];
       this.sim = new Sim({ lanes: n, players: names.map((nm, i) => ({ name: nm, bot: i !== 0, diff: n === 4 && i === 1 ? (opts.allyDiff || diff) : diff, legion: legs[i] || 'random', strategy: i === 0 ? opts.strategy : undefined })) });
       this.aiLast = -1;
@@ -202,7 +202,7 @@ export class Game {
     }
     sim.ev.length = 0;
   }
-  onOver(ev) { if (this.over) return; this.over = true; const win = ev.winner === this.sim.P(this.me).team; ev.win = win; if (!this.sim.over) this.sim.over = { winner: ev.winner, why: ev.why }; this.ui.gameOver(win, this.sim); win ? sfx.victory() : sfx.defeat(); }
+  onOver(ev) { if (this.over) return; this.over = true; const win = ev.winner === this.sim.P(this.me).team; ev.win = win; if (!this.sim.over) this.sim.over = { winner: ev.winner, why: ev.why }; (this.onGameOver ? this.onGameOver(win, this.sim, ev) : this.ui.gameOver(win, this.sim)); win ? sfx.victory() : sfx.defeat(); }
 
   // ───── entrada ─────
   bindInput() {

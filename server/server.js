@@ -49,12 +49,12 @@ function startMatch(mode, humans) {
   // equilibrar equipos por MMR: mejor + peor juntos
   const hs = humans.map(c => ({ c, mmr: prof(c.name).mmr })).sort((a, b) => b.mmr - a.mmr);
   const order = hs.length === 4 ? [hs[0], hs[3], hs[1], hs[2]] : hs;
-  const slots = [0, 1, 2, 3].map(i => order[i] ? { c: order[i].c, name: order[i].c.name, bot: false } : { c: null, name: 'Bot ' + ['Poro', 'Teemo', 'Rammus', 'Blitz'][i], bot: true, diff: 'normal' });
-  const sim = new Sim({ lanes: 4, players: slots.map(s => ({ name: s.name, bot: s.bot, diff: s.diff })) });
+  const slots = [0, 1, 2, 3].map(i => order[i] ? { c: order[i].c, name: order[i].c.name, bot: false, legion: order[i].c.legion || 'random' } : { c: null, name: 'Bot ' + ['Poro', 'Teemo', 'Rammus', 'Blitz'][i], bot: true, diff: 'normal', legion: 'random' });
+  const sim = new Sim({ lanes: 4, players: slots.map(s => ({ name: s.name, bot: s.bot, diff: s.diff, legion: s.legion })) });
   const m = { id: mid++, mode, ranked, sim, slots, last: -1, tick: 0, evbuf: [], over: false };
   slots.forEach((s, i) => { if (s.c) { s.c.match = m; s.c.side = i; } });
   matches.add(m);
-  const info = slots.map((s, i) => ({ name: s.name, bot: s.bot, team: sim.P(i).team, ...(s.bot ? {} : { mmr: prof(s.name).mmr, tier: prof(s.name).tier }) }));
+  const info = slots.map((s, i) => ({ name: s.name, bot: s.bot, team: sim.P(i).team, legion: sim.P(i).legion, ...(s.bot ? {} : { mmr: prof(s.name).mmr, tier: prof(s.name).tier }) }));
   slots.forEach((s, i) => s.c && send(s.c, { t: 'start', id: m.id, me: i, n: 4, ranked, mode, players: info }));
   console.log(`[match ${m.id}] ${mode} ${slots.map(s => s.name).join(', ')}`);
 }
@@ -94,7 +94,7 @@ wss.on('connection', ws => {
     let d; try { d = JSON.parse(raw); } catch { return; }
     if (d.t === 'hello') { c.name = String(d.name || '').replace(/[^\p{L}\p{N} _-]/gu, '').slice(0, 16) || 'Invocador' + Math.floor(Math.random() * 999); send(c, { t: 'profile', p: prof(c.name) }); saveRatings(); }
     else if (!c.name) return;
-    else if (d.t === 'queue' && !c.match && queues[d.mode]) { leaveQueue(c); c.qt = Date.now(); queues[d.mode].push(c); queueInfo(d.mode); }
+    else if (d.t === 'queue' && !c.match && queues[d.mode]) { leaveQueue(c); c.legion = typeof d.legion === 'string' ? d.legion.slice(0, 20) : 'random'; c.qt = Date.now(); queues[d.mode].push(c); queueInfo(d.mode); }
     else if (d.t === 'leave') leaveQueue(c);
     else if (d.t === 'cmd' && c.match && !c.match.over && d.c && typeof d.c.a === 'string') c.match.sim.command(c.side, d.c);
     else if (d.t === 'lb') send(c, { t: 'lb', list: Object.values(ratings).sort((a, b) => b.mmr - a.mmr).slice(0, 10).map(r => ({ name: r.name, mmr: r.mmr, tier: tierOf(r.mmr), w: r.w, l: r.l })) });

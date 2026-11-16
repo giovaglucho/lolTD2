@@ -563,7 +563,7 @@ const r2 = v => Math.round(v * 100) / 100;
 export function snapshot(sim) {
   return {
     n: sim.n, ph: sim.phase, tm: r2(sim.timer), wv: sim.wave, ov: sim.over, teams: sim.teams,
-    pl: sim.players.map(p => ({ name: p.name, bot: p.bot, team: p.team, legion: p.legion, roll: p.roll, g: Math.floor(p.gold), my: Math.floor(p.myth), inc: p.income, wk: p.workers, rd: p.ready, k: p.kills, q: p.queue.map(m => m.id), sent: p.sent, spell: p.spell, offer: p.spellOffer })),
+    pl: sim.players.map(p => ({ name: p.name, bot: p.bot, team: p.team, legion: p.legion, roll: p.roll, g: Math.floor(p.gold), my: Math.floor(p.myth), inc: p.income, wk: p.workers, rd: p.ready, k: p.kills, q: p.queue.map(m => m.id), sent: p.sent, spell: p.spell, offer: p.spellOffer, sr: p.sellRate, pig: Math.round(p.piggy), rr: p.rerolls, st: p.strategy, dealt: Math.round(p.dealt) })),
     e: sim.ents.map(e => [e.id, e.lane, e.team === 'def' ? 0 : 1, e.kind === 'fighter' ? e.def.id : e.kind === 'summon' ? '@' + e.def.model : e.ck, r2(e.x), r2(e.z), r2(e.face), Math.round(e.hp), Math.round(e.maxHp),
       (e.dead ? 1 : 0) | (e.moving ? 2 : 0) | (e.stun > 0 ? 4 : 0) | (e.slow > 0 ? 8 : 0) | (e.dot > 0 ? 16 : 0) | (e.boss ? 32 : 0) | (e.up ? 64 : 0) | (e.kind === 'merc' ? 128 : 0) | (e.shield > 0 ? 256 : 0) | (e.stealthT > 0 ? 512 : 0),
       r2(e.atkT), r2(e.aspd), r2(e.castT), r2(e.deathT), r2(e.speed), e.cell ? e.cell[0] : -1, e.cell ? e.cell[1] : -1, e.owner === 'wave' ? -1 : e.owner, r2(e.radius), Math.round(e.value || 0), Math.round(e.fresh || 0), e.up || 0]),

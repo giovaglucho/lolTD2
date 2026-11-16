@@ -32,20 +32,20 @@ export class NetSim {
   }
   apply(s, evs) {
     this.n = s.n; this.phase = s.ph; this.timer = s.tm; this.wave = s.wv; this.over = s.ov; this.teams = s.teams;
-    this.players = s.pl.map((p, i) => ({ side: i, team: p.team, name: p.name, bot: p.bot, gold: p.g, myth: p.my, income: p.inc, workers: p.wk, ready: p.rd, kills: p.k, sent: p.sent,
+    this.players = s.pl.map((p, i) => ({ side: i, team: p.team, name: p.name, bot: p.bot, legion: p.legion, roll: p.roll || [], spellOffer: p.offer || null, spell: p.spell, sellRate: p.sr ?? .5, piggy: p.pig || 0, rerolls: p.rr || 0, strategy: p.st, dealt: p.dealt || 0, gold: p.g, myth: p.my, income: p.inc, workers: p.wk, ready: p.rd, kills: p.k, sent: p.sent,
       queue: p.q.map(id => MBY[id]), grid: new Array(GRID.cols * GRID.rows).fill(null), nexus: { isNexus: true, x: 0, z: 28, lane: i } }));
     const seen = new Set();
     for (const a of s.e) {
-      const [id, lane, tm, key, x, z, face, hp, maxHp, fl, atkT, aspd, castT, deathT, speed, c, r, owner, radius, value, fresh] = a;
+      const [id, lane, tm, key, x, z, face, hp, maxHp, fl, atkT, aspd, castT, deathT, speed, c, r, owner, radius, value, fresh, upi] = a;
       seen.add(id); let e = this.map.get(id);
-      if (!e) { e = { id, def: tm === 0 ? FBY[key] : CREEPS[key], ck: tm === 0 ? null : key, flash: 0 }; this.map.set(id, e); this.ents.push(e); }
+      if (!e) { const summ = typeof key === 'string' && key[0] === '@'; e = { id, def: summ ? { id: key.slice(1), model: key.slice(1), s: 1, hp: maxHp, dmg: 1 } : tm === 0 ? FBY[key] : CREEPS[key], ck: tm === 0 ? null : key, flash: 0, summ }; this.map.set(id, e); this.ents.push(e); }
       if (hp < e.hp) e.flash = .12;
-      Object.assign(e, { lane, team: tm === 0 ? 'def' : 'att', kind: tm === 0 ? 'fighter' : (fl & 128 ? 'merc' : 'creep'), x, z, face, hp, maxHp, atkT, aspd, castT, deathT, speed, radius, value, fresh,
+      Object.assign(e, { lane, team: tm === 0 ? 'def' : 'att', kind: e.summ ? 'summon' : tm === 0 ? 'fighter' : (fl & 128 ? 'merc' : 'creep'), shield: fl & 256 ? 1 : 0, stealthT: fl & 512 ? 1 : 0, upDef: upi && e.def.upgrades ? e.def.upgrades[upi - 1] : null, x, z, face, hp, maxHp, atkT, aspd, castT, deathT, speed, radius, value, fresh,
         dead: !!(fl & 1), moving: !!(fl & 2), stun: fl & 4 ? 1 : 0, slow: fl & 8 ? 1 : 0, dot: fl & 16 ? 1 : 0, boss: !!(fl & 32), up: fl & 64 ? 1 : 0, owner: owner < 0 ? 'wave' : owner, cell: c >= 0 ? [c, r] : null });
-      if (e.cell && e.team === 'def') this.players[lane].grid[r * GRID.cols + c] = e;
+      if (e.cell && e.kind === 'fighter') this.players[lane].grid[r * GRID.cols + c] = e;
     }
     if (seen.size !== this.map.size) { this.ents = this.ents.filter(e => seen.has(e.id)); for (const k of [...this.map.keys()]) if (!seen.has(k)) this.map.delete(k); }
-    this.projs = s.p.map(([id, lane, x, z, color, size]) => ({ id, src: { lane }, x, z, y: 1.2, color, size }));
+    this.projs = s.p.map(([id, lane, x, z, color, size, shape]) => { const old = this._pj && this._pj.get(id); return { id, src: { lane }, x, z, y: 1.2, color, size, shape, dir: old ? Math.atan2(x - old.x, z - old.z) : undefined }; }); this._pj = new Map(this.projs.map(p => [p.id, p]));
     for (const ev of evs || []) this.ev.push(ev);
   }
   update(dt) { if (this.phase === 'build') this.timer = Math.max(0, this.timer - dt); for (const e of this.ents) if (e.flash > 0) e.flash -= dt; }
@@ -54,7 +54,11 @@ export class NetSim {
   canPlace(side, c, r) { const p = this.P(side); return !!p && this.phase === 'build' && c >= 0 && c < GRID.cols && r >= 0 && r < GRID.rows && !p.grid[r * GRID.cols + c]; }
   place(side, id, c, r) { if (!this.canPlace(side, c, r) || this.P(side).gold < FBY[id].cost) return null; this.cmd({ a: 'place', id, c, r }); this.P(side).gold -= FBY[id].cost; return true; }
   sell(side, c, r) { if (this.phase !== 'build') return false; this.cmd({ a: 'sell', c, r }); return true; }
-  upgrade(side, c, r) { const e = this.P(side).grid[r * GRID.cols + c]; if (!e || e.up || this.P(side).gold < this.upgradeCost(e)) return false; this.cmd({ a: 'upgrade', c, r }); return true; }
+  upgrade(side, c, r, i = 0) { const e = this.P(side).grid[r * GRID.cols + c]; if (!e || e.up || this.P(side).gold < this.upgradeCost(e, i)) return false; this.cmd({ a: 'upgrade', c, r, i }); return true; }
+  reroll() { this.cmd({ a: 'reroll' }); return true; }
+  breakPiggy() { this.cmd({ a: 'piggy' }); return true; }
+  chooseSpell(side, id, c, r) { this.cmd({ a: 'spell', id, c, r }); return true; }
+  autoSpell() {}
   buyWorker(side) { if (this.P(side).gold < this.workerCost(side)) return false; this.cmd({ a: 'worker' }); return true; }
   buyMerc(side, id) { if (this.phase !== 'build' || this.P(side).myth < MBY[id].cost) return false; this.cmd({ a: 'merc', id }); this.P(side).myth -= MBY[id].cost; return true; }
   upgradeNexus(side, kind) { if (this.P(side).myth < this.nexusCost(side, kind)) return false; this.cmd({ a: 'nexus', kind }); return true; }
