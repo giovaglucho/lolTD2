@@ -6,6 +6,8 @@ import { getSettings } from './store.js';
 let renderer = null, canvas = null, raf = 0, running = false, last = 0, T = 0;
 let bg = null, viewer = null, mode = 'main';
 const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
+export const stageCfg = { maxFps: 0 }; // 0 = sin límite (la vista previa lo limita para capturas con render por software)
+let lastDraw = 0;
 
 const spriteTex = (() => { let t; return () => { if (t) return t; const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d'); const g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.25, 'rgba(255,255,255,.75)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); t = new THREE.CanvasTexture(c); return t; }; })();
 function rng(seed) { let s = seed >>> 0; return () => ((s = Math.imul(s ^ (s >>> 15), 2246822507) + 0x9e3779b9 >>> 0) / 4294967296); }
@@ -212,7 +214,10 @@ function renderViewer(dt, W, H) {
 function frame(now) {
   if (!running) return;
   raf = requestAnimationFrame(frame);
+  if (stageCfg.maxFps && now - lastDraw < 1000 / stageCfg.maxFps) return;
+  lastDraw = now;
   const dt = Math.min(.05, (now - last) / 1000 || 0); last = now; T += dt;
+  const t0 = performance.now();
   const W = canvas.clientWidth || innerWidth, H = canvas.clientHeight || innerHeight;
   const pr = getSettings().quality === 'low' ? .7 : Math.min(devicePixelRatio || 1, 1.5);
   if (renderer.getPixelRatio() !== pr) renderer.setPixelRatio(pr);
@@ -222,6 +227,7 @@ function frame(now) {
   updateBackground(bg, dt);
   renderer.setViewport(0, 0, W, H); renderer.render(bg.scene, bg.camera);
   if (mode === 'codex') renderViewer(dt, W, H);
+  window.__stageMs = performance.now() - t0;
 }
 
 export function stageStart(host) {

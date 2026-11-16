@@ -98,7 +98,7 @@ export const MODELS = {
     const st = grp(r.handR, 0, -.03, 0);
     P(st, U.cyl, white, [0, .3, 0], [.028, 1.45, .028]);
     P(st, merged('dmLuxStaffG', () => [X(U.ring, [0, 1.12, 0], [0, 0, 0], [.15, .17, 1.2]), X(U.cone, [0, .97, 0], [PI, 0, 0], [.05, .12, .05]), X(U.cyl, [0, -.38, 0], [0, 0, 0], [.04, .08, .04]), ...[-1, 1].flatMap(sx => [X(U.pyr, [sx * .16, 1.02, 0], [0, 0, sx * .95], [.03, .28, .06]), X(U.pyr, [sx * .2, 1.14, 0], [0, 0, sx * .5], [.02, .2, .04])])]), gold);
-    const orb = P(st, U.sph, glow(Up ? 0xffc8ff : 0xffe680, Up ? 2.6 : 2), [0, 1.12, 0], .09); P(st, U.sph, M(Up ? 0xff9ff0 : 0xffd860, { e: 1.2, ec: Up ? 0xff80e0 : 0xffc040, t: .25, add: 1 }), [0, 1.12, 0], .14);
+    const orb = P(st, U.sph, glow(Up ? 0xe080ff : 0xffc030, Up ? 1.8 : 1.5), [0, 1.12, 0], .085); P(st, U.sph, M(Up ? 0xff9ff0 : 0xffd860, { e: 1.2, ec: Up ? 0xff80e0 : 0xffc040, t: .25, add: 1 }), [0, 1.12, 0], .14);
     r.pulse = [orb]; r.weapon = st;
     r.armR.rotation.set(-.2, 0, .5); r.foreR.rotation.x = -.7; staffUpright(r, st); st.rotation.z = -.42;
     if (Up) { // Elementalista: orbes de los elementos orbitando
@@ -196,7 +196,7 @@ export const MODELS = {
     const r = h.rig, hs = r.hs; r.root.scale.setScalar(1.28); r.heavy = true;
     r.torso.rotation.x = .1;
     P(r.torso, merged('dmGalPecs', () => [-1, 1].map(sx => X(U.dod, [sx * .17, .33, .1], [.2, sx * .3, 0], [.2, .17, .14]))), stone);
-    P(r.torso, merged('dmGalAbs', () => [0, 1, 2].map(i => X(U.box, [0, .02 + i * .085, .15 - i * .005], [-.1, 0, 0], [.2 - i * .02, .06, .06]))), stoneD);
+    P(r.torso, merged('dmGalAbs', () => [-1, 1].flatMap(sx => [0, 1].map(i => X(U.dod, [sx * .07, .06 + i * .09, .14], [0, 0, 0], [.07, .05, .04])))), stoneD);
     P(r.torso, merged('dmGalTrim', () => [X(U.ring, [0, .47, -.02], [PI / 2, 0, 0], [.2, .17, 2.2]), ...emblem([0, .2, .2], 1.4)]), gold);
     // hombros de roca con borde
     for (const [a, sx] of [[r.armL, -1], [r.armR, 1]]) {
@@ -207,9 +207,10 @@ export const MODELS = {
     for (const hd of [r.handL, r.handR]) { P(hd, U.dod, stone, [0, -.07, .02], [.17, .17, .17]); if (Up) P(hd, U.dod, M(0xff6a1a, { e: 1.6, ec: 0xff4a0a, t: .5, add: 1 }), [0, -.07, .02], .2); }
     // cabeza: cara de león-gárgola, melena hacia atrás y cuernos
     P(r.head, U.dod, stoneD, [0, .12, .08], [.22, .14, .2]);
-    P(r.head, merged('dmGalMane', () => { const o = []; for (let i = 0; i < 7; i++) { const a = (i / 6 - .5) * 2.4; o.push(X(U.cone, [Math.sin(a) * .18, .34 - Math.abs(a) * .05, -.06], [-1.15, 0, -a * .55], [.07, .36, .05])); } for (const sx of [-1, 1]) o.push(X(tube('dmGalHorn' + sx, [[0, 0, 0], [sx * .1, .12, -.05], [sx * .15, .3, -.15], [sx * .1, .45, -.3]], taper(.07, .01), 12, 6), [sx * .16, .3, 0])); return o; }), stone);
+    P(r.head, merged('dmGalMane', () => { const o = []; for (let i = 0; i < 9; i++) { const a = (i / 8 - .5) * 2.6; o.push(X(U.cone, [Math.sin(a) * .2, .38 - Math.abs(a) * .06, -.04], [-1.0 - Math.abs(a) * .15, 0, -a * .6], [.075, .46 - Math.abs(a) * .08, .05])); } for (const sx of [-1, 1]) o.push(X(tube('dmGalHorn' + sx, [[0, 0, 0], [sx * .1, .12, -.05], [sx * .15, .3, -.15], [sx * .1, .45, -.3]], taper(.07, .01), 12, 6), [sx * .16, .3, 0])); return o; }), stone);
     P(r.head, merged('dmGalEyes', () => [-1, 1].map(sx => X(U.box, [sx * .085, .2, .22], [0, 0, sx * -.3], [.08, .025, .02]))), eye);
     P(r.head, U.box, stoneD, [0, .24, .21], [.24, .04, .06]);                              // ceño
+    P(r.head, merged('dmGalSnout', () => [X(U.dod, [0, .1, .2], [0, 0, 0], [.12, .08, .1]), X(U.dod, [0, .02, .14], [0, 0, 0], [.15, .06, .12]), ...[-1, 1].map(sx => X(U.cone, [sx * .1, .0, .2], [PI, 0, 0], [.025, .07, .025]))]), stone);
     // alas de piedra plegadas (plumas)
     const wingG = merged('dmGalWing', () => { const o = []; for (let i = 0; i < 5; i++) { const a = .25 + i * .26, L = 1.25 - i * .14; o.push(X(U.rbox, [Math.sin(a) * L * .5, Math.cos(a) * L * .5, -i * .02], [0, 0, -a], [.17, L, .05])); } o.push(X(U.cyl, [.18, .55, .02], [0, 0, -.32], [.06, 1.1, .06])); return o; });
     r.wings = [-1, 1].map(sx => { const wg = grp(r.torso, sx * .17, .4, -.2); wg.scale.x = sx; wg.rotation.set(-.25, sx * .35, 0); P(wg, wingG, stone); P(wg, U.dod, stoneD, [.05, .05, 0], .12); return wg; });
@@ -256,7 +257,7 @@ export const MODELS = {
     P(vbody, ext('dmValTail', s => { s.moveTo(0, 0); s.lineTo(.08, -.22); s.lineTo(0, -.18); s.lineTo(-.08, -.22); s.lineTo(0, 0); }, .015, .004), fW, [0, -.01, -.16], 1, [PI / 2 + .25, 0, 0]);
     const wingG = ext('dmValWing', s => { s.moveTo(0, 0); s.lineTo(.42, .06); s.lineTo(.36, -.02); s.lineTo(.3, -.08); s.lineTo(.22, -.1); s.lineTo(.12, -.12); s.lineTo(0, -.1); s.lineTo(0, 0); }, .012, .004, 0);
     const vw = [-1, 1].map(sx => { const w = grp(vbody, sx * .06, .04, .02); w.scale.x = sx; w.rotation.x = -PI / 2; P(w, wingG, fW); return w; });
-    if (Up) P(vbody, U.sph, M(0xff8a2a, { e: 2, ec: 0xff6a10, t: .35, add: 1 }), [0, 0, 0], [.32, .14, .32]);
+    if (Up) P(vbody, U.sph, M(0xff8a2a, { e: 1.2, ec: 0xff5a10, t: .22, add: 1 }), [0, 0, -.05], [.16, .1, .26]);
     r.valor = { g: vb, body: vbody, wings: vw };
     r.anim = (m, rr, st, t) => {
       const v = rr.valor, a = st.atk >= 0 ? Math.min(1, st.atk) : -1, dive = a >= 0 ? kf(a, 0, [[0, 0], [.3, .2], [.55, 1], [.8, .4], [1, 0]]) : 0;

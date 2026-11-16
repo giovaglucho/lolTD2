@@ -63,18 +63,18 @@ export const MODELS = {
     P(r.armL, puffs('JxTat', [[-.06, -.1, .03, .03], [-.065, -.14, .0, .035], [-.06, -.18, .03, .028], [-.055, -.06, -.02, .025]]), M(Up ? 0x8a6aff : 0xff4fa3, { r: .5, e: .3, ec: C.acc }));
     // pelo: flequillo, coletas larguísimas
     hairCap(r, hair, { tilt: -.5 }); bangs(r, hair, 7, { len: .17, spread: 1.08 });
-    const braidPts = sx => [[sx * .19, .33, -.1], [sx * .34, .2, -.16], [sx * .42, -.15, -.22], [sx * .44, -.6, -.28], [sx * .4, -1.0, -.38], [sx * .32, -1.25, -.6], [sx * .24, -1.32, -.9]];
+    const braidPts = sx => [[sx * .19, .33, -.1], [sx * .34, .2, -.16], [sx * .42, -.15, -.22], [sx * .44, -.6, -.28], [sx * .4, -1.0, -.36], [sx * .33, -1.24, -.5], [sx * .27, -1.31, -.66]];
     r.braids = [-1, 1].map(sx => {
       const bg = grp(r.head, 0, 0, 0);
       P(bg, tube('pzJxBraid' + sx, braidPts(sx), taper(.09, .032, .33, 46), 48, 7), hair);
-      P(bg, merged('pzJxTie' + sx, () => [X(U.cyl, [sx * .3, .25, -.14], [0, 0, sx * .9], [.06, .05, .06]), X(U.sph, [sx * .24, -1.32, -.9], [0, 0, 0], .045)]), Up ? gold : acc);
+      P(bg, merged('pzJxTie' + sx, () => [X(U.cyl, [sx * .3, .25, -.14], [0, 0, sx * .9], [.06, .05, .06]), X(U.sph, [sx * .27, -1.31, -.66], [0, 0, 0], .045)]), Up ? gold : acc);
       return bg;
     });
-    P(r.head, merged('pzJxTips', () => [-1, 1].map(sx => X(tube('pzJxTipT' + sx, [[sx * .32, -1.25, -.6], [sx * .24, -1.32, -.9]], taper(.05, .035), 6, 6), [0, 0, 0]))), hair2);
+    P(r.head, merged('pzJxTips', () => [-1, 1].map(sx => X(tube('pzJxTipT' + sx, [[sx * .33, -1.24, -.5], [sx * .27, -1.31, -.66]], taper(.05, .035), 6, 6), [0, 0, 0]))), hair2);
     if (Up) P(r.head, merged('pzJxStars', () => [[-.2, .4, .1], [.22, .38, .12], [0, .5, .05]].map(([x, y, z], i) => X(U.oct, [x * hs, y * hs, z * hs], [0, 0, i], [.05, .07, .02]))), gold);
     // Huesos de Pez (lanzacohetes tiburón) al hombro derecho
     const fb = Up ? M(0xffb6e0, { m: .2, r: .4 }) : M(0x5d7d9c, { m: .45, r: .42 }), fbD = Up ? M(0xff5fb8, { r: .45 }) : M(0x3e5770, { m: .5, r: .45 });
-    const lz = grp(r.torso, .4, .55, -.08); lz.scale.setScalar(.92); r.launcher = lz;
+    const lz = grp(r.torso, .47, .54, -.17); lz.scale.setScalar(.92); lz.rotation.y = .06; r.launcher = lz;
     P(lz, lathe('pzFbBody', [[.02, -.78], [.12, -.64], [.19, -.32], [.215, 0], [.2, .2], [.16, .32]]), fb, [0, 0, 0], 1, [PI / 2, 0, 0]);
     P(lz, U.sph, fb, [0, .07, .38], [.19, .11, .21]);
     P(lz, U.sph, fbD, [0, -.11, .36], [.16, .06, .18]);
@@ -85,14 +85,14 @@ export const MODELS = {
     P(lz, merged('pzFbPaint', () => [X(U.ring, [0, 0, .05], [0, 0, 0], [.214, .214, 1.4]), X(U.ring, [0, 0, -.18], [0, 0, 0], [.205, .205, 1.4]), X(U.pyr, [0, .2, .15], [0, 0, 0], [.04, .12, .04]), X(U.cyl, [0, .2, -.32], [0, 0, 0], [.03, .06, .03])]), Up ? gold : acc);
     if (Up) P(lz, U.oct, glow(0xffe680, 2.6), [0, .26, -.34], [.07, .1, .03]);
     // Pow-Pow (minigun) en la cadera izquierda
-    const pw = grp(r.torso, -.27, .0, .22); r.pow = pw;
+    const pw = grp(r.torso, -.3, .0, .2); r.pow = pw;
     const pwM = Up ? M(0xfff4fb, { m: .3, r: .35 }) : M(0x5b6478, { m: .6, r: .4 });
     const bar = grp(pw, 0, 0, 0); r.powBar = bar;
     P(bar, merged('pzPowBar', () => [0, 1, 2, 3, 4, 5].map(i => X(U.cyl, [Math.cos(i * PI / 3) * .045, Math.sin(i * PI / 3) * .045, .32], [PI / 2, 0, 0], [.017, .48, .017]))), M(0x2a2a32, { m: .8, r: .3 }));
     P(pw, merged('pzPowRing', () => [X(U.cyl, [0, 0, .5], [PI / 2, 0, 0], [.08, .04, .08]), X(U.cyl, [0, 0, .16], [PI / 2, 0, 0], [.085, .05, .085])]), Up ? gold : acc);
     P(pw, merged('pzPowBody', () => [X(U.rbox, [0, 0, -.04], [0, 0, 0], [.17, .17, .26]), X(U.rbox, [0, -.13, -.08], [.3, 0, 0], [.05, .14, .06]), X(U.cyl, [-.13, 0, -.04], [0, 0, PI / 2], [.1, .07, .1])]), pwM);
     P(pw, U.sph, Up ? M(0xff86cf, { r: .4 }) : M(0x2cb4ee, { r: .45 }), [-.17, 0, -.04], [.04, .08, .08]);
-    r.armR.rotation.set(-1.05, 0, .55); r.foreR.rotation.x = -1.25; r.armL.rotation.set(-.55, .1, -.05); r.foreL.rotation.x = -.75;
+    r.armR.rotation.set(-.95, 0, .62); r.foreR.rotation.x = -1.2; r.armL.rotation.set(-.3, 0, -.14); r.foreL.rotation.x = -.5;
     r.holdR = r.holdL = true; r.theme = Up ? 0xff86cf : 0xff4fa3;
     r.anim = (m, r, st, t, dt) => { r.powBar.rotation.z += dt * (st.atk >= 0 ? 30 : 1.5); };
     return h;
@@ -107,7 +107,7 @@ export const MODELS = {
     const hair = hairM(Up ? 0xff3fb0 : 0xf2508e);
     // corte asimétrico: rapado a un lado y mechón barrido al otro
     P(r.head, U.hemi, hair, [.025, .2, -.02], [.27, .3, .275], [-.42, 0, -.22]);
-    P(r.head, U.hemi, M(Up ? 0xa02a7a : 0xa83a5e, { r: .8 }), [-.01, .19, -.02], [.262, .27, .265], [-.6, 0, .25]);
+    P(r.head, merged('pzViSpk', () => [0, 1, 2, 3, 4].map(i => X(U.cone, [.02 + i * .05, .45 - i * .02, .02 - i * .03], [-.5, 0, -.5 - i * .15], [.06, .16, .05]))), hair);
     P(r.head, tube('pzViSwoop', [[-.12, .44, .12], [.05, .44, .2], [.18, .36, .2], [.25, .2, .16], [.26, .08, .1]], taper(.07, .03), 14, 7), hair);
     bangs(r, hair, 4, { len: .13, spread: .55 });
     brows(r, M(0x8a2a4a, { r: .7 }), .22);
@@ -123,12 +123,13 @@ export const MODELS = {
     r.gaunt = [];
     for (const [f, sx] of [[r.foreL, -1], [r.foreR, 1]]) {
       const gt = grp(f, 0, 0, 0);
-      P(gt, lathe('pzViCuff', [[.09, .06], [.13, .02], [.15, -.12], [.16, -.24], [.12, -.26]]), gb);
-      P(gt, merged('pzViPist' + sx, () => [X(U.cyl, [sx * .15, -.12, -.04], [0, 0, 0], [.03, .26, .03]), X(U.cyl, [sx * .13, -.12, .06], [0, 0, 0], [.025, .24, .025]), X(U.box, [0, -.3, 0], [0, 0, 0], [.2, .06, .2])]), gm);
-      P(gt, U.rbox, gm, [0, -.43, .02], [.34, .3, .34]);
-      P(gt, merged('pzViKnk', () => [0, 1, 2, 3].map(i => X(U.rbox, [(-.12 + i * .08), -.56, .1], [0, 0, 0], [.075, .09, .15]))), gb);
-      P(gt, merged('pzViCore', () => [X(U.cyl, [0, -.42, .175], [PI / 2, 0, 0], [.07, .02, .07]), X(U.box, [0, -.2, .155], [0, 0, 0], [.025, .16, .01])]), core);
-      if (Up) P(gt, U.box, pinkG, [sx * .175, -.43, .02], [.01, .22, .26]);
+      gt.scale.setScalar(1.12);
+      P(gt, lathe('pzViCuff', [[.08, .08], [.13, .05], [.17, -.08], [.2, -.22], [.2, -.28], [.15, -.31]]), gb);
+      P(gt, merged('pzViPist' + sx, () => [X(U.cyl, [sx * .19, -.1, -.05], [0, 0, 0], [.032, .3, .032]), X(U.cyl, [sx * .17, -.1, .08], [0, 0, 0], [.026, .28, .026]), X(U.rbox, [0, -.12, .17], [0, 0, 0], [.2, .26, .06])]), gm);
+      P(gt, merged('pzViFist', () => [X(U.sph, [0, -.44, 0], [0, 0, 0], [.21, .2, .21]), X(U.rbox, [0, -.42, .13], [0, 0, 0], [.32, .26, .1]), X(U.cyl, [-.17, -.44, .06], [.6, 0, .3], [.06, .16, .06])]), gm);
+      P(gt, merged('pzViKnk', () => [0, 1, 2, 3].map(i => X(U.cyl, [-.12 + i * .08, -.58, .02], [PI / 2, 0, 0], [.055, .3, .055]))), gb);
+      P(gt, merged('pzViCore', () => [X(U.cyl, [0, -.4, .185], [PI / 2, 0, 0], [.075, .02, .075]), X(U.box, [0, -.12, .205], [0, 0, 0], [.03, .2, .01]), X(U.box, [0, -.58, .1], [0, 0, 0], [.3, .02, .01])]), core);
+      if (Up) P(gt, merged('pzViNeonG', () => [X(U.box, [sx * .215, -.43, .02], [0, 0, 0], [.01, .24, .3]), X(U.ring, [0, -.24, 0], [PI / 2, 0, 0], [.205, .205, .8])]), pinkG);
       r.gaunt.push(gt);
     }
     r.armL.rotation.set(-.35, 0, -.28); r.foreL.rotation.x = -1.0; r.armR.rotation.set(-.25, 0, .3); r.foreR.rotation.x = -.85;
@@ -177,10 +178,10 @@ export const MODELS = {
       P(cap, lathe('pzCtCap', [[0, 0], [.25, 0], [.27, .06], [.31, .14], [.3, .17], [0, .19]], 24), M(0x1a2648, { r: .6 }));
       P(cap, U.sph, M(0x0e0e14, { m: .3, r: .2 }), [0, .01, .2], [.2, .03, .16]);
       P(cap, U.oct, gold, [0, .08, .27], [.045, .055, .015]);
-      P(r.head, merged('pzCtShades', () => [-1, 1].map(sx => X(U.sph, [sx * .085, .19, .235], [0, 0, 0], [.07, .045, .02]))), M(0x111111, { m: .9, r: .1 }));
+      P(r.head, merged('pzCtShades', () => [-1, 1].map(sx => X(U.sph, [sx * .085, .195, .238], [0, 0, .2 * sx], [.055, .032, .015]))), M(0x24303a, { m: .95, r: .08 }));
     }
     // rifle de francotirador hextech
-    const rf = grp(r.torso, .14, .38, .1); r.rifle = rf;
+    const rf = grp(r.torso, .15, .4, .08); rf.scale.setScalar(1.3); r.rifle = rf;
     const wood = M(Up ? 0x1a1a22 : 0x5a3018, { r: .55 }), gunM = metal(0x2e2e38, .32), purp = Up ? M(0x2a3a6a, { m: .5, r: .4 }) : M(0x5a2f8c, { m: .4, r: .4 });
     P(rf, merged('pzCtStock', () => [X(prof('CtStk', s => { s.moveTo(-.45, -.12); s.lineTo(-.45, .05); s.lineTo(-.15, .05); s.lineTo(-.02, .03); s.lineTo(-.02, -.06); s.lineTo(-.12, -.07); s.lineTo(-.22, -.18); s.lineTo(-.3, -.16); s.lineTo(-.26, -.08); s.lineTo(-.45, -.12); }, .06), [0, 0, 0], SIDE)]), wood);
     P(rf, merged('pzCtGold', () => [X(U.rbox, [0, 0, .14], [0, 0, 0], [.085, .11, .32]), X(U.cyl, [0, .005, 1.32], [PI / 2, 0, 0], [.04, .1, .04]), X(U.cyl, [0, .11, .02], [PI / 2, 0, 0], [.04, .03, .04]), X(U.cyl, [0, .11, .26], [PI / 2, 0, 0], [.04, .03, .04]), X(U.cyl, [0, .005, .62], [PI / 2, 0, 0], [.045, .04, .045])]), gold);
@@ -281,13 +282,13 @@ export const MODELS = {
   // ═══════════════════════ EKKO ═══════════════════════
   ekko(Up) {
     const skinC = 0x7a4e36;
-    const jackC = Up ? 0xf2efe8 : 0x34404e, jack = M(jackC, { r: .75 }), pants = M(Up ? 0x1a1a22 : 0x262c36, { r: .75 });
+    const jackC = Up ? 0xf2efe8 : 0x4e6070, jack = M(jackC, { r: .75 }), pants = M(Up ? 0x1a1a22 : 0x2e3644, { r: .75 });
     const hood = cloth(Up ? 0x1a1a22 : 0xc89a2a, 1), shoe = M(0xeeeeee, { r: .55 }), tg = glow(Up ? 0xb47aff : 0x3ff0d0, 2.8), gold = gld(Up);
     const h = humanoid({ bulk: .9, head: 1.06, skin: skinC, topM: jack, sleeveM: jack, foreM: jack, handM: M(0x1a1a20, { r: .6 }), thighM: pants, shinM: pants, bootM: shoe, beltM: Up ? gold : M(0x1a1a20, { r: .6 }), style: 'swing', eyeM: M(0x2a1a14, { r: .3 }) });
     const r = h.rig, hs = r.hs;
     // pelo blanco en cresta, laterales rapados
     P(r.head, U.hemi, M(0x2a2228, { r: .9 }), [0, .2, -.01], [.258, .27, .258], [-.35, 0, 0]);
-    P(r.head, merged('pzEkHair', () => { const o = []; for (let i = 0; i < 7; i++) { const u = i / 6; o.push(X(U.cone, [0, .44 - u * .1, .14 - u * .4], [-1.1 - u * .9 + .5, 0, 0], [.07 - u * .02, .22, .09 - u * .02])); } o.push(X(U.cone, [.06, .45, .1], [.1, 0, -.4], [.05, .18, .05]), X(U.cone, [-.06, .45, .08], [.1, 0, .4], [.05, .17, .05])); return o; }), hairM(0xf4f4f8));
+    P(r.head, merged('pzEkHair', () => { const o = [X(tube('pzEkTuft', [[0, .38, .2], [0, .52, .1], [0, .6, -.08], [0, .56, -.26], [0, .44, -.36]], taper(.13, .03), 16, 8), [0, 0, 0], [0, 0, 0], [.75, 1, 1])]; for (let i = 0; i < 5; i++) { const u = i / 4; o.push(X(U.cone, [(i % 2 ? .05 : -.05), .55 - u * .05, .06 - u * .3], [-1.0 - u * .7, 0, (i % 2 ? -.3 : .3)], [.06, .2, .05])); } return o; }), hairM(0xf4f4f8));
     // marcas faciales blancas
     P(r.head, merged('pzEkMark', () => [-1, 1].map(sx => X(U.box, [sx * .13, .14, .2], [0, sx * .5, sx * -.3], [.06, .012, .01]))), M(0xf6f6f6, { r: .5 }));
     // capucha en la nuca y bufanda
@@ -302,7 +303,7 @@ export const MODELS = {
     P(bat, merged('pzEkBat', () => [X(U.cyl, [0, 0, .1], [PI / 2, 0, 0], [.03, .5, .03]), X(lathe('pzEkBatH', [[.0, 0], [.045, .02], [.06, .3], [.075, .55], [.06, .62], [0, .64]]), [0, 0, .32], [PI / 2, 0, 0])]), Up ? M(0x1a1a22, { m: .6, r: .3 }) : M(0x3a3f4a, { m: .6, r: .35 }));
     P(bat, merged('pzEkBatG', () => [0, 1, 2].map(i => X(U.cyl, [0, 0, .5 + i * .14], [PI / 2, 0, 0], [.072, .025, .072]))), tg);
     P(bat, U.cyl, Up ? gold : hood, [0, 0, -.16], [.04, .06, .04], [PI / 2, 0, 0]);
-    r.weapon = bat; r.armR.rotation.set(-.35, 0, .3); r.foreR.rotation.x = -1.5; bat.rotation.set(.35, 0, 0);
+    r.weapon = bat; r.armR.rotation.set(-.2, 0, .32); r.foreR.rotation.x = -1.25; bat.rotation.set(-1.05, 0, -.2);
     if (Up) P(r.torso, merged('pzEkChain', () => [X(U.ring, [0, .33, .03], [PI / 2 - .25, 0, 0], [.17, .16, .6])]), gold);
     r.pulse = [zd];
     r.holdR = true; r.theme = Up ? 0xb47aff : 0x3ff0d0;
@@ -347,7 +348,7 @@ export const MODELS = {
   // ═══════════════════════ VIKTOR ═══════════════════════
   viktor(Up) {
     const robeC = Up ? 0xd8dce6 : 0x3a2a4e, robe = M(robeC, { r: .78, ds: 1 }), robeM = M(robeC, { r: .75 }), dark = M(Up ? 0x8a94a8 : 0x231a30, { r: .7 });
-    const steel = Up ? M(0xeef2f8, { m: .7, r: .25 }) : metal(0x6a6e78, .35), gold = Up ? M(0x9fe8ff, { m: .8, r: .25, e: .5, ec: 0x3fc8ff }) : M(0xc89a40, { m: .9, r: .3 });
+    const steel = Up ? M(0xeef2f8, { m: .5, r: .25 }) : M(0x8a8e98, { m: .6, r: .32 }), gold = Up ? M(0x9fe8ff, { m: .8, r: .25, e: .5, ec: 0x3fc8ff }) : M(0xc89a40, { m: .9, r: .3 });
     const eyeC = Up ? 0x7fe8ff : 0xffa64a, eg = glow(eyeC, 3.2);
     const h = humanoid({ bulk: 1.0, head: 1.0, leg: 1.04, skin: 0xb8aca4, faceM: steel, topM: robeM, sleeveM: robeM, foreM: steel, handM: steel, thighM: dark, shinM: steel, bootM: steel, beltM: gold, hipM: dark, style: 'cast', noEyes: true });
     const r = h.rig, hs = r.hs; r.castSide = 'L';
@@ -355,8 +356,8 @@ export const MODELS = {
     P(r.head, merged('pzVkVisor', () => [X(U.box, [0, .21, .225], [0, 0, 0], [.2, .035, .04]), X(U.sph, [-.07, .21, .235], [0, 0, 0], .028), X(U.sph, [.07, .21, .235], [0, 0, 0], .028)]), eg);
     P(r.head, merged('pzVkGrill', () => [0, 1, 2, 3].map(i => X(U.box, [-.06 + i * .04, .09, .22], [0, 0, 0], [.012, .07, .02]))), dark);
     // capucha
-    P(r.head, lathe('pzVkHood', [[.0, .5], [.16, .47], [.28, .35], [.31, .18], [.29, .02], [.24, -.08]], 22), robe, [0, 0, -.04], [1, 1, 1.05]);
-    P(r.head, U.ring, gold, [0, .2, .02], [.27, .27, .8], [-.15, 0, 0]);
+    P(r.head, cg('pzVkHoodG', () => new THREE.LatheGeometry([[.0, .52], [.17, .49], [.29, .36], [.32, .18], [.3, .02], [.25, -.08]].map(([x, y]) => new THREE.Vector2(x, y)), 22, .9, TAU - 1.8)), robe, [0, 0, -.05], [1, 1, 1.08]);
+    P(r.head, cg('pzVkHoodRim', () => new THREE.TorusGeometry(.3, .025, 6, 20, TAU - 1.6)), gold, [0, .2, .0], 1, [0, PI / 2 + .8, PI / 2]);
     // túnica larga
     skirt(r, robe, 'pzVk', [[.42, -.8], [.34, -.45], [.25, -.08], [.2, .1]], gold);
     P(r.torso, merged('pzVkPlate', () => [X(U.sph, [0, .3, .06], [0, 0, 0], [.22, .17, .13]), X(U.cyl, [0, .44, 0], [0, 0, 0], [.2, .06, .16])]), steel);
@@ -405,13 +406,13 @@ export const MODELS = {
     P(torso, merged('pzBcVent', () => [0, 1, 2, 3, 4].map(i => X(U.rbox, [-.2 + i * .1, .5, .44], [-.15, 0, 0], [.05, .2, .04]))), iron);
     P(torso, merged('pzBcRiv', () => { const o = []; for (let i = 0; i < 12; i++) { const a = (i / 11 - .5) * 2.6; o.push(X(U.sph, [Math.sin(a) * .54, .28, Math.cos(a) * .42], [0, 0, 0], .025)); } return o; }), rust);
     // chimeneas de vapor
-    P(torso, merged('pzBcStack', () => [-1, 1].flatMap(sx => [X(U.cyl, [sx * .22, .95, -.3], [-.3, 0, sx * .12], [.08, .5, .08]), X(U.cyl, [sx * .245, 1.18, -.38], [-.3, 0, sx * .12], [.11, .08, .11])])), iron);
+    P(torso, merged('pzBcStack', () => [-1, 1].flatMap(sx => [X(U.cyl, [sx * .24, .88, -.36], [-.55, 0, sx * .2], [.1, .45, .1]), X(U.cyl, [sx * .29, 1.06, -.5], [-.55, 0, sx * .2], [.13, .08, .13])])), iron);
     // cabeza: cúpula con ojos
     const head = grp(torso, 0, .9, .22);
     P(head, U.sph, brass, [0, .06, 0], [.22, .19, .2]);
     P(head, U.sph, iron, [0, .03, .1], [.18, .13, .13]);
-    P(head, merged('pzBcEyeR', () => [-1, 1].map(sx => X(U.cyl, [sx * .085, .08, .2], [PI / 2, 0, 0], [.065, .04, .065]))), brassD);
-    P(head, merged('pzBcEye', () => [-1, 1].map(sx => X(U.sph, [sx * .085, .08, .22], [0, 0, 0], [.05, .05, .025]))), eg);
+    P(head, merged('pzBcEyeR', () => [-1, 1].map(sx => X(U.cyl, [sx * .1, .08, .2], [PI / 2, 0, 0], [.08, .04, .08]))), brassD);
+    P(head, merged('pzBcEye', () => [-1, 1].map(sx => X(U.sph, [sx * .1, .08, .222], [0, 0, 0], [.064, .064, .025]))), eg);
     P(head, merged('pzBcMouth', () => [0, 1, 2, 3].map(i => X(U.box, [-.06 + i * .04, -.03, .21], [0, 0, 0], [.018, .05, .02]))), Up ? M(0x5fd8ff, { e: 1, ec: 0x5fd8ff }) : brassD);
     // brazos largos con manos de garra
     const arm = [], fore = [], hand = [];
@@ -450,11 +451,11 @@ export const MODELS = {
     const chemC = Up ? 0xd86aff : 0x7fff5a, chem = glow(chemC, 2.6);
     const h = humanoid({ bulk: 1.38, head: 1.0, leg: 1.0, skin: furC, faceM: fur, topM: fur, absM: furL, sleeveM: fur, foreM: fur, handM: furD, thighM: pants, shinM: fur, bootM: furD, beltM: leather, hipM: pants, style: 'swing', noEyes: true, noBelt: false });
     const r = h.rig, hs = r.hs; r.digi = true;
-    r.torso.rotation.x = .42; r.head.rotation.x = -.35; r.head.position.z = .05;
+    r.torso.rotation.x = .62; r.head.rotation.x = -.6; r.head.position.z = .06; r.head.scale.setScalar(1.12); r.armL.scale.setScalar(1.22); r.armR.scale.setScalar(1.22);
     // cabeza de lobo
     const hd = r.head;
-    P(hd, U.sph, fur, [0, .14, .24], [.14, .11, .22]);
-    P(hd, U.sph, furD, [0, .19, .45], [.05, .04, .04]);
+    P(hd, U.sph, fur, [0, .14, .26], [.14, .11, .26]);
+    P(hd, U.sph, furD, [0, .19, .5], [.055, .045, .045]);
     P(hd, merged('pzWwBrow', () => [-1, 1].map(sx => X(U.sph, [sx * .1, .27, .18], [0, 0, sx * .4], [.1, .04, .08]))), furD);
     P(hd, merged('pzWwEye', () => [-1, 1].map(sx => X(U.box, [sx * .1, .22, .225], [0, 0, sx * -.35], [.07, .02, .02]))), glow(Up ? 0xff7aff : 0xffd23a, 3.2));
     P(hd, merged('pzWwEars', () => [-1, 1].map(sx => X(U.cone, [sx * .17, .43, -.06], [-.35, 0, -sx * .3], [.07, .22, .05]))), fur);
@@ -463,7 +464,7 @@ export const MODELS = {
     P(jaw, U.sph, furD, [0, -.04, .16], [.11, .05, .18]);
     P(jaw, merged('pzWwFangL', () => [-1, 1].map(sx => X(U.cone, [sx * .06, .0, .28], [0, 0, 0], [.016, .06, .016]))), M(0xf2ead8, { r: .4 }));
     // melena erizada por el lomo
-    P(r.torso, merged('pzWwMane', () => { const o = []; for (let i = 0; i < 9; i++) { const u = i / 8, a = (i % 3 - 1) * .5; o.push(X(U.cone, [Math.sin(a) * .15, .62 - u * .45, -.1 - Math.cos(u * 2) * .12], [-1.9 + u * .5, 0, a * .6], [.08, .3 - u * .1, .06])); } return o; }), furL);
+    P(r.torso, merged('pzWwMane', () => { const o = []; for (let i = 0; i < 9; i++) { const u = i / 8, a = (i % 3 - 1) * .5; o.push(X(U.cone, [Math.sin(a) * .16, .6 - u * .5, -.22 - Math.cos(u * 2) * .08], [-2.2 + u * .5, 0, a * .7], [.09, .34 - u * .1, .07])); } return o; }), furL);
     P(hd, merged('pzWwMane2', () => [-1, 0, 1].map(i => X(U.cone, [i * .12, .3, -.18], [-2.0, 0, i * .4], [.08, .26, .06]))), furL);
     // tanque químico a la espalda con tubos
     const tk = grp(r.torso, 0, .36, -.32); tk.rotation.x = -.3;
