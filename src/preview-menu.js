@@ -1,4 +1,5 @@
 // Vista previa del menú (solo desarrollo): /preview-menu.html?view=main|solo|multi|guides|profile|ranking|shop|guild|patch|settings|codex|codex-mm|loading|result
+import * as MenuAPI from './menu/index.js';
 import { mountMenu, showMenu, showLoading, showResult, openView, store } from './menu/index.js';
 import { LEGIONS } from './content/index.js';
 import { stageCfg } from './menu/stage.js';
@@ -26,11 +27,12 @@ const api = {
   startOnline: m => console.log('startOnline', m),
   applySettings: s => console.log('applySettings', s),
 };
+window.__menu = { ...MenuAPI, showMenu, showLoading, showResult, openView, store };
 mountMenu(api);
 const v = q.get('view') || 'main';
 if (q.get('seed')) { const p = store.getProfile(); p.name = 'Kayn de Zaun'; p.xp = 2350; p.essence = 1840; p.mmr = 1420; p.guild = { name: 'Guardianes del Alba', tag: 'ALBA', color: '#0ac8b9', emblem: 'targon' }; p.title = 'estratega'; p.owned.titles.push('estratega'); p.stats = { games: 14, wins: 9, losses: 5, kills: 4210, bestWave: 20, byLegion: { demacia: { games: 6, wins: 4, bestWave: 20 }, jonia: { games: 4, wins: 3, bestWave: 18 }, noxus: { games: 4, wins: 2, bestWave: 15 } } }; p.history = [...Array(8)].map((_, i) => ({ t: Date.now() - i * 86400000, win: i % 3 !== 1, wave: 12 + (i * 3) % 9, mode: i % 2 ? '2v2' : '1v1', legion: ['demacia', 'jonia', 'noxus'][i % 3], kills: 300 + i * 41, value: 2400 + i * 300, mmrDelta: i % 4 === 0 ? (i % 3 !== 1 ? 18 : -14) : 0 })); store.saveProfile(p); }
 (async () => {
-  if (v === 'loading') { showMenu(); await sleep(50); showLoading({ mode: '2v2', players: [{ name: store.getProfile().name, legion: 'demacia', team: 0, me: true }, { name: 'Aliado IA', legion: 'jonia', team: 0, bot: true, diff: 'normal' }, { name: 'IA Noxiana', legion: 'noxus', team: 1, bot: true, diff: 'dificil' }, { name: 'IA Piltover', legion: 'piltover', team: 1, bot: true, diff: 'dificil' }] }); if (q.get('hold')) { /* deja la carga visible */ } }
+  if (v === 'loading') { showMenu(); await sleep(50); showLoading({ mode: '2v2', hold: q.get('hold') ? 600000 : 0, players: [{ name: store.getProfile().name, legion: 'demacia', team: 0, me: true }, { name: 'Aliado IA', legion: 'jonia', team: 0, bot: true, diff: 'normal' }, { name: 'IA Noxiana', legion: 'noxus', team: 1, bot: true, diff: 'dificil' }, { name: 'IA Piltover', legion: 'piltover', team: 1, bot: true, diff: 'dificil' }] }); if (q.get('hold')) { /* deja la carga visible */ } }
   else if (v === 'result') { showResult({ win: q.get('lose') ? false : true, wave: 20, mode: '1v1', legion: 'demacia', kills: 642, value: 5230, rewards: { xp: 420, essence: 130 }, mmrDelta: q.get('lose') ? -14 : 18 }); }
   else if (v === 'codex-mm') { showMenu('codex'); openView('codex', { tab: 'mm' }); }
   else if (v.startsWith('codex-')) { showMenu('codex'); openView('codex', { tab: v.slice(6) }); }

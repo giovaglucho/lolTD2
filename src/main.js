@@ -71,7 +71,8 @@ async function boot() {
   if (params.get('auto')) startLocal({ lanes: +params.get('lanes') || 2, diff: params.get('diff') || 'normal', legion: params.get('legion') || 'random' });
   else showMenu();
   let last = performance.now();
-  const loop = now => { const dt = (now - last) / 1000; last = now; game.frame(dt); requestAnimationFrame(loop); };
+  const menuOpen = () => { const m = document.getElementById('menu-root'); return m && !m.classList.contains('hidden'); };
+  const loop = now => { const dt = (now - last) / 1000; last = now; if (game.started || !menuOpen()) game.frame(dt); requestAnimationFrame(loop); };
   requestAnimationFrame(loop);
 }
 setTimeout(boot, 30);

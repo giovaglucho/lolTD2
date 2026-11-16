@@ -66,7 +66,7 @@ export class UI {
     t.classList.remove('hidden');
   }
   onStart(game) {
-    $('title').classList.add('hidden'); $('hud').classList.remove('hidden'); $('end').classList.add('hidden'); $('log').innerHTML = ''; this._nk = null; this._ik = null; this._pk = null;
+    $('title')?.classList.add('hidden'); $('hud').classList.remove('hidden'); $('end').classList.add('hidden'); $('log').innerHTML = ''; this._nk = null; this._ik = null; this._pk = null;
     const sim = game.sim; $('bSpeed').classList.toggle('hidden', !game.local); this._rollKey = null; this.buildShop();
     this.log(game.local ? '¡Bienvenido a la Grieta! Coloca campeones en tu plataforma.' : `Partida ${game.netInfo.ranked ? 'RANKED' : 'Clásica'} 2v2 — ¡suerte, invocador!`);
   }

@@ -127,6 +127,7 @@ function tabUnits(root) {
 }
 function unitListAll() { const s = { ...state }; const out = []; for (const sub of ['champs', 'waves', 'mercs']) { state.sub = sub; state.legion = 'all'; state.tier = 'all'; state.dmg = 'all'; state.arm = 'all'; state.q = ''; out.push(...unitList()); } Object.assign(state, s); return out; }
 
+const plur = n => n === 1 ? '1 campeón' : n + ' campeones';
 const statRow = (k, v, up) => `<div><span>${k}</span><b class="${up ? 'up' : ''}">${v}</b></div>`;
 function typesHTML(dmgType, armorType) {
   const d = DMG[dmgType], a = ARM[armorType];
@@ -218,11 +219,11 @@ function listDetail(root, items, keyName, color, detailFn) {
   render();
 }
 function tabMM(root) {
-  root.appendChild(h(`<div class="m-tip" style="margin:0 0 12px;max-width:none">${emblem('invocador', '#c8aa6e', '34px')}<div><b>${esc(MASTERMIND.name)} · ${esc(MASTERMIND.title)}.</b>&nbsp;${esc(MASTERMIND.desc)}</div></div>`));
+  root.appendChild(h(`<div class="m-tip ic" style="margin:0 0 12px;max-width:none">${emblem('invocador', '#c8aa6e', '34px')}<div><b>${esc(MASTERMIND.name)} · ${esc(MASTERMIND.title)}.</b>&nbsp;${esc(MASTERMIND.desc)}</div></div>`));
   listDetail(root, STRATEGIES, 'mm', '#46f0e0', s => `${iconTile(glyph(s.id, s.icon), '#46f0e0')}<h2>${esc(s.name)}</h2><div class="cx-desc" style="text-align:center">${esc(s.desc)}</div><div class="cx-fx">${fxLines(s.fx).map(([k, v, neg]) => `<div><span>${k}</span><b class="${neg ? 'neg' : ''}">${v}</b></div>`).join('')}</div><div class="m-tip"><b>Mente maestra:</b>&nbsp;recibes ${MASTERMIND.rollSize || 8} campeones aleatorios de todas las regiones.</div>`);
 }
 function tabSpells(root) {
-  root.appendChild(h(`<div class="m-tip" style="margin:0 0 12px">${UI.bolt}<div>Al empezar la <b>oleada 7</b> se te ofrecen 3 hechizos al azar. Los de tipo <b>campeón</b> se aplican a una unidad; los de tipo <b>legión</b>, a todo tu ejército o economía.</div></div>`));
+  root.appendChild(h(`<div class="m-tip ic" style="margin:0 0 12px">${UI.bolt}<div>Al empezar la <b>oleada 7</b> se te ofrecen 3 hechizos al azar. Los de tipo <b>campeón</b> se aplican a una unidad; los de tipo <b>legión</b>, a todo tu ejército o economía.</div></div>`));
   listDetail(root, SPELLS, 'sp', '#c8aa6e', s => `${iconTile(glyph(s.id, s.icon), hex(s.color))}<h2>${esc(s.name)}</h2><div style="text-align:center;margin-bottom:10px"><span class="cx-pill" style="--c:${s.target === 'team' ? '#46f0e0' : '#f2c94c'}">${s.target === 'team' ? 'Legión' : 'Campeón'}</span></div><div class="cx-desc" style="text-align:center">${esc(s.desc)}</div>`);
 }
 
@@ -246,8 +247,8 @@ function tabNexus(root) {
 
 function tabTypes(root) {
   root.appendChild(h(`<div class="cx-full" style="grid-template-columns:auto 1fr"><div class="cx-detail" style="padding:26px"><div class="m-kicker">Daño infligido según la armadura del objetivo</div><h2 style="margin:4px 0 10px;font:600 36px var(--cond);color:#fff;text-transform:uppercase">Tipos de daño y armadura</h2>${matrixHTML()}<p class="cx-desc" style="max-width:640px">Además del tipo, la <b>armadura numérica</b> reduce el daño recibido: daño × 100 / (100 + armadura). El daño <b style="color:${DMG.puro?.color}">Puro</b> ignora el tipo de armadura, pero no la armadura numérica.</p></div>
-    <div class="cx-detail" style="padding:22px"><h3 class="m-h3" style="padding:0 0 10px">Tipos de daño</h3>${Object.entries(DMG).map(([k, d]) => `<div class="cx-type" style="--c:${d.color};margin-bottom:8px"><div class="t">${d.icon}</div><div><b>${d.name}</b><div style="color:#c0c5ce;font-size:13.5px">${esc(d.desc)} <span style="color:#9fb0c4">· ${allChamps().filter(c => c.dmgType === k).length} campeones</span></div></div></div>`).join('')}
-      <h3 class="m-h3" style="padding:14px 0 10px">Tipos de armadura</h3>${Object.entries(ARM).map(([k, d]) => `<div class="cx-type" style="--c:${d.color};margin-bottom:8px"><div class="t">${d.icon}</div><div><b>${d.name}</b><div style="color:#c0c5ce;font-size:13.5px">${esc(d.desc)} <span style="color:#9fb0c4">· ${allChamps().filter(c => c.armorType === k).length} campeones</span></div></div></div>`).join('')}</div></div>`));
+    <div class="cx-detail" style="padding:22px"><h3 class="m-h3" style="padding:0 0 10px">Tipos de daño</h3>${Object.entries(DMG).map(([k, d]) => `<div class="cx-type" style="--c:${d.color};margin-bottom:8px"><div class="t">${d.icon}</div><div><b>${d.name}</b><div style="color:#c0c5ce;font-size:13.5px">${esc(d.desc)} <span style="color:#9fb0c4">· ${plur(allChamps().filter(c => c.dmgType === k).length)}</span></div></div></div>`).join('')}
+      <h3 class="m-h3" style="padding:14px 0 10px">Tipos de armadura</h3>${Object.entries(ARM).map(([k, d]) => `<div class="cx-type" style="--c:${d.color};margin-bottom:8px"><div class="t">${d.icon}</div><div><b>${d.name}</b><div style="color:#c0c5ce;font-size:13.5px">${esc(d.desc)} <span style="color:#9fb0c4">· ${plur(allChamps().filter(c => c.armorType === k).length)}</span></div></div></div>`).join('')}</div></div>`));
 }
 
 function tabManual(root) {

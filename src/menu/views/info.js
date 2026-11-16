@@ -111,13 +111,12 @@ export function viewSettings(el) {
         <div class="m-srow"><span>Volumen general</span><input class="m-range" type="range" min="0" max="1" step="0.05" data-k="volume"><output></output></div>
         <div class="m-srow"><span>Efectos de sonido</span><label class="m-check"><input type="checkbox" data-k="sfx"> Activados</label><span></span></div>
         <div class="m-srow"><span>Música</span><label class="m-check"><input type="checkbox" data-k="music"> Activada</label><span></span></div></div></div>
-      <div class="m-panel"><h3>${UI.globe} Juego y red</h3><div class="rows">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px;min-height:0"><div class="m-panel"><h3>${UI.globe} Juego y red</h3><div class="rows">
         <div class="m-srow"><span>Velocidad de cámara</span><input class="m-range" type="range" min="0.4" max="2" step="0.1" data-k="camSpeed"><output></output></div>
         <div class="m-srow"><span>Desplazar con el borde</span><label class="m-check"><input type="checkbox" data-k="edgePan"> Activado</label><span></span></div>
-        <div class="m-field" style="margin:12px 0 4px"><label>URL de servidor propio</label><input class="m-in" data-k="serverUrl" placeholder="wss://mi-servidor.ejemplo:8787/ws"><small style="color:var(--dim2)">Déjalo vacío para usar los servidores oficiales (próximamente). Para alojar uno: <b style="color:var(--gold2)">npm start</b>.</small></div></div></div>
-    </div>
-    <div style="display:flex;flex-direction:column;min-height:0"><div class="m-panel m-scroll" style="flex:1"><h3>${UI.grid} Controles</h3><div class="m-keys">${KEYS.map(([d, k]) => `<div>${d}</div><div style="text-align:right">${k.map(x => `<kbd>${x}</kbd>`).join('')}</div>`).join('')}</div></div>
-      <div style="display:flex;gap:12px;padding-top:16px;justify-content:flex-end"><button class="m-btn" data-a="reset">Restablecer</button><button class="m-btn teal" data-a="save" style="min-width:180px">Guardar</button></div></div>
+        <div class="m-field" style="margin:12px 0 4px"><label>URL de servidor propio</label><input class="m-in" data-k="serverUrl" placeholder="wss://mi-servidor.ejemplo:8787/ws"><small style="color:var(--dim2)">Déjalo vacío para usar los servidores oficiales (próximamente). Para alojar uno: <b style="color:var(--gold2)">npm start</b>.</small></div></div></div><div class="m-panel m-scroll" style="flex:1"><h3>${UI.grid} Controles</h3><div class="m-keys">${KEYS.map(([d, k]) => `<div>${d}</div><div style="text-align:right">${k.map(x => `<kbd>${x}</kbd>`).join('')}</div>`).join('')}</div></div>
+      <div style="display:flex;gap:12px;justify-content:flex-end"><button class="m-btn" data-a="reset">Restablecer</button><button class="m-btn teal" data-a="save" style="min-width:180px">Guardar</button></div></div>
   </div></div>`));
   const cur = { ...s };
   const sync = () => {

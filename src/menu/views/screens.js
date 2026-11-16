@@ -33,7 +33,7 @@ export function runLoading(el, info = {}) {
   const L = players.filter(p => (p.team ?? 0) === myTeam), R = players.filter(p => (p.team ?? 0) !== myTeam);
   const prof = getProfile(), rk = rankOf(prof.mmr || 1200);
   const card = (p, i, side) => {
-    const sub = p.bot ? `<span class="flag bot"></span><span>IA · ${esc(DIFFS[p.diff]?.name || p.diff || 'Normal')}</span>` : `<span class="flag"></span><span style="color:${p.me ? rk.c2 : 'inherit'}">${p.me ? rk.label : 'Invocador'}</span>`;
+    const sub = p.bot ? `<span class="flag bot"></span><span>${esc(DIFFS[p.diff]?.name || p.diff || 'Normal')}</span>` : `<span class="flag"></span><span style="color:${p.me ? rk.c2 : 'inherit'}">${p.me ? rk.label : 'Invocador'}</span>`;
     return `<div class="ld-card" style="--lc:${legCol(p.legion)};--lc2:${legAcc(p.legion)};animation-delay:${.1 + i * .12}s"><div class="pt">${pimg(playerKey(p))}</div><div class="info"><div class="nm">${esc(p.name || 'Invocador')}${p.me ? ' <small style="font:500 12px var(--ui);color:var(--teal2)">(tú)</small>' : ''}</div><div class="sub">${emblem(p.legion, legAcc(p.legion))}<span class="lg">${esc(legName(p.legion))}</span>${sub}</div><div class="pb"><i></i></div><div class="pct">0%</div></div></div>`;
   };
   const mode = info.mode === '2v2' ? '2 contra 2' : '1 contra 1';
@@ -52,7 +52,7 @@ export function runLoading(el, info = {}) {
     const tick = () => {
       const t = performance.now() - t0, k = Math.min(1, t / DUR);
       bars.forEach(b => { const v = Math.min(1, Math.pow(k * b.sp * 1.15, .8)); const pct = Math.round((k >= 1 ? 1 : v) * 100); b.i.style.width = pct + '%'; b.t.textContent = pct >= 100 ? 'Listo' : pct + '%'; });
-      if (k >= 1 && (preDone || t > 6000)) { setTimeout(res, 150); return; }
+      if (k >= 1 && (preDone || t > 6000) && !(info.hold && t < info.hold)) { setTimeout(res, 150); return; }
       requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);

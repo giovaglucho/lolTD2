@@ -77,7 +77,7 @@ export function viewRanking(el) {
   const rows = ladder(); const me = { name: p.name, tag: p.guild?.tag || '', mmr: p.mmr, games: p.stats.games, wins: p.stats.wins, legion: fav, av: avatarKey(p), me: true };
   rows.push(me); rows.sort((a, b) => b.mmr - a.mmr);
   const pos = rows.indexOf(me) + 1;
-  el.appendChild(h(`<div class="m-page"><div class="m-ptitle"><h1>Clasi<em>ficación</em></h1><span class="sub">Temporada 1 · Ranked 2v2 · Servidor local</span></div>
+  el.appendChild(h(`<div class="m-page"><div class="m-ptitle"><h1>Clasificación</h1><span class="sub">Temporada 1 · Ranked 2v2 · Servidor local</span></div>
     <div style="display:flex;flex-direction:column;gap:16px;flex:1;min-height:0">
       <div class="m-panel"><div class="m-tiers">${RANKS.map(r => `<div class="m-tier ${r.id === rk.id ? 'on' : ''}" style="--c:${r.c2}">${crest({ ...r, idx: RANKS.indexOf(r) })}<b>${r.name}</b><small>${r.mmr}+ PL</small></div>`).join('')}</div></div>
       <div class="m-panel" style="flex:1;display:flex;flex-direction:column;min-height:0"><h3>${UI.trophy} Mejores invocadores <span style="margin-left:auto;font-family:var(--ui);letter-spacing:0;text-transform:none;color:var(--dim)">Tu posición: <b style="color:var(--teal2)">#${pos}</b> · ${rk.label} · ${p.mmr} PL</span></h3>

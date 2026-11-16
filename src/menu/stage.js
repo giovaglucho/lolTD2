@@ -4,7 +4,7 @@ import * as Models from '../models.js';
 import { getSettings } from './store.js';
 
 let renderer = null, canvas = null, raf = 0, running = false, last = 0, T = 0;
-let bg = null, viewer = null, mode = 'main';
+let bg = null, viewer = null, mode = 'main', veil = null;
 const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
 export const stageCfg = { maxFps: 0 }; // 0 = sin límite (la vista previa lo limita para capturas con render por software)
 let lastDraw = 0;
@@ -147,6 +147,16 @@ const SHOTS = {
   codex: { p: [10, 6, 16], l: [0, 4, -8] },
 };
 
+// velo oscuro (Códice) y fondo del visor: se dibujan en el propio canvas para que el visor 3D quede visible
+function buildVeil() {
+  const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const mk = (map, color, opacity) => { const sc = new THREE.Scene(); sc.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map, color, transparent: true, opacity, depthTest: false, depthWrite: false, fog: false }))); return sc; };
+  const c = document.createElement('canvas'); c.width = 8; c.height = 256; const x = c.getContext('2d'); const g = x.createLinearGradient(0, 0, 0, 256); g.addColorStop(0, 'rgba(14,22,34,1)'); g.addColorStop(1, 'rgba(8,12,20,1)'); x.fillStyle = g; x.fillRect(0, 0, 8, 256);
+  const r = document.createElement('canvas'); r.width = r.height = 256; const y = r.getContext('2d'); const rg = y.createRadialGradient(128, 190, 10, 128, 150, 200); rg.addColorStop(0, 'rgba(24,52,66,1)'); rg.addColorStop(.6, 'rgba(12,20,32,1)'); rg.addColorStop(1, 'rgba(7,11,18,1)'); y.fillStyle = rg; y.fillRect(0, 0, 256, 256);
+  const t1 = new THREE.CanvasTexture(c), t2 = new THREE.CanvasTexture(r); t1.colorSpace = t2.colorSpace = THREE.SRGBColorSpace;
+  return { cam, full: mk(t1, 0xffffff, .9), box: mk(t2, 0xffffff, 1) };
+}
+
 // ───────── visor del Códice ─────────
 function buildViewer() {
   const scene = new THREE.Scene();
@@ -207,7 +217,7 @@ function renderViewer(dt, W, H) {
   c.position.set(0, v.fit.y + d * .3, d); c.lookAt(0, v.fit.y * .85, 0);
   const x = rc.left, y = H - rc.bottom;
   renderer.setScissorTest(true); renderer.setViewport(x, y, rc.width, rc.height); renderer.setScissor(x, y, rc.width, rc.height);
-  renderer.autoClear = false; renderer.clearDepth(); renderer.render(v.scene, c); renderer.autoClear = true;
+  renderer.autoClear = false; renderer.clearDepth(); if (!veil) veil = buildVeil(); renderer.render(veil.box, veil.cam); renderer.clearDepth(); renderer.render(v.scene, c); renderer.autoClear = true;
   renderer.setScissorTest(false);
 }
 
@@ -226,7 +236,7 @@ function frame(now) {
   bg.camera.aspect = W / H; bg.camera.updateProjectionMatrix();
   updateBackground(bg, dt);
   renderer.setViewport(0, 0, W, H); renderer.render(bg.scene, bg.camera);
-  if (mode === 'codex') renderViewer(dt, W, H);
+  if (mode === 'codex') { if (!veil) veil = buildVeil(); renderer.autoClear = false; renderer.render(veil.full, veil.cam); renderer.autoClear = true; renderViewer(dt, W, H); }
   window.__stageMs = performance.now() - t0;
 }
 
@@ -245,6 +255,7 @@ export function stageStart(host) {
 function onMouse(e) { mouse.x = e.clientX / innerWidth * 2 - 1; mouse.y = e.clientY / innerHeight * 2 - 1; }
 export function stageStop() {
   running = false; cancelAnimationFrame(raf);
+  veil = null; bg = null; viewer = null;
   if (renderer) { removeEventListener('pointermove', onMouse); try { renderer.dispose(); renderer.forceContextLoss(); } catch {} renderer = null; canvas && canvas.remove(); canvas = null; }
 }
 export function stageMode(m) { mode = m; }

@@ -37,11 +37,11 @@ export function viewSolo(el, opts = {}) {
     </div></div>`));
   const legsEl = el.querySelector('.m-legs');
   const card = (id, name, title, desc, color, accent, champs, embId) => {
-    const shown = champs.slice(0, 6);
+    const shown = champs.slice(0, 5);
     return `<button class="m-leg" data-leg="${id}" style="--lc:${hex(color)};--la:${hex(accent)}">${emblem(embId, hex(accent))}
-      <div class="lh">${emblem(embId, hex(accent))}<h4>${esc(name)}</h4><div class="lt">${esc(title || '')}</div></div>
+      <div class="lh">${emblem(embId, hex(accent))}<h4${name.length > 11 ? ' style="font-size:17px;white-space:nowrap;letter-spacing:.01em"' : ''}>${esc(name)}</h4><div class="lt">${esc(title || '')}</div></div>
       <div class="ld">${esc(desc || '')}</div>
-      <div class="lp">${shown.length ? shown.map(c => pimg(c.id || c, `title="${esc(c.name || '')}"`)).join('') + (champs.length > shown.length ? `<span class="more">+${champs.length - shown.length}</span>` : '') : `<span class="more" style="margin:0">Campeones en camino…</span>`}</div>
+      <div class="lp">${shown.length ? shown.map(c => pimg(c.id || c, `title="${esc(c.name || '')}"`)).join('') + (champs.length > shown.length ? `<span class="more">+${champs.length - shown.length}</span>` : '') : `<span class="more" style="margin:0">${id === 'random' ? 'Las 6 legiones y el Invocador' : 'Campeones en camino…'}</span>`}</div>
       <span class="chk">${UI.check}</span></button>`;
   };
   const all = allChamps();
@@ -60,13 +60,14 @@ export function viewSolo(el, opts = {}) {
     renderStrats();
     const ln = sel.legion === 'invocador' ? MASTERMIND.name : sel.legion === 'random' ? 'Aleatoria' : (legs.find(l => l.id === sel.legion)?.name || '—');
     const st = sel.legion === 'invocador' ? STRATEGIES.find(s => s.id === sel.strategy) : null;
-    sum.innerHTML = `<div><small>Modo</small><b>${sel.mode === '2v2' ? '2 contra 2' : '1 contra 1'}</b></div><div><small>Dificultad</small><b style="color:${DIFF_INFO[sel.diff][0]}">${DIFF_LIST.find(d => d[0] === sel.diff)[1]}</b></div><div><small>Legión</small><b>${esc(ln)}</b></div>${st ? `<div><small>Estrategia</small><b style="color:var(--teal2)">${esc(st.name)}</b></div>` : ''}<div><small>Rivales</small><b>${sel.mode === '2v2' ? '2 IA aleatorias' : '1 IA aleatoria'}</b></div>`;
+    sum.innerHTML = `<div><small>Modo</small><b>${sel.mode === '2v2' ? '2 vs 2' : '1 vs 1'}</b></div><div><small>Dificultad</small><b style="color:${DIFF_INFO[sel.diff][0]}">${DIFF_LIST.find(d => d[0] === sel.diff)[1]}</b></div><div><small>Legión</small><b>${esc(ln)}</b></div>${st ? `<div><small>Estrategia</small><b style="color:var(--teal2)">${esc(st.name)}</b></div>` : ''}<div><small>Rivales</small><b>${sel.mode === '2v2' ? '2 IA' : '1 IA'}</b></div>`;
     saveSel(sel);
   };
   el.addEventListener('click', e => {
     const t = e.target.closest('[data-mode],[data-diff],[data-leg],[data-strat]'); if (!t) return; click();
     if (t.dataset.mode) sel.mode = t.dataset.mode; if (t.dataset.diff) sel.diff = t.dataset.diff; if (t.dataset.leg) sel.legion = t.dataset.leg; if (t.dataset.strat) sel.strategy = t.dataset.strat;
     refresh(); hydrate(el);
+    if (t.dataset.leg === 'invocador') setTimeout(() => el.querySelector('.m-stratwrap')?.scrollIntoView({ behavior: 'smooth', block: 'end' }), 60);
   });
   el.querySelector('.m-btn.play').onclick = () => {
     click('horn');
@@ -85,7 +86,7 @@ export function viewMulti(el) {
   const p = getProfile(), rk = rankOf(p.mmr || 1200), online = !!(ctx.api.onlineAvailable && ctx.api.onlineAvailable());
   const srv = getSettings().serverUrl;
   el.appendChild(h(`<div class="m-page">
-    <div class="m-ptitle"><h1>Multi<em>jugador</em></h1><span class="sub">Partidas 2 contra 2 con otros invocadores.</span></div>
+    <div class="m-ptitle"><h1>Multijugador</h1><span class="sub">Partidas 2 contra 2 con otros invocadores.</span></div>
     <div class="m-queues">
       <div class="m-panel m-queue">${emblem('demacia', '#c8aa6e').replace('class="emb"', 'class="emb bgemb"')}
         <div class="m-kicker">Partida normal</div><h2>Clásico 2v2</h2>
