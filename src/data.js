@@ -3,8 +3,15 @@
 // ─────────────────────────────────────────────────────────────
 export const GRID = { cols: 10, rows: 6, cell: 2.4, z0: 4 };
 export const LANE = { spawnZ: -34, nexusZ: 28, half: 14 };
-export const CFG = { buildTime: 28, startGold: 420, baseIncome: 80, pcost: 50, pinc: 8, maxP: 20,
-  nexusHp: 2200, totalWaves: 20 };
+export const CFG = { buildTime: 30, startGold: 500, startMyth: 0, startWorkers: 1, baseIncome: 110, pcost: 50, pcostStep: 10, maxP: 20, mythRate: 1.0,
+  nexusHp: 3000, nexusHp2v2: 4200, totalWaves: 20, upMul: .9, upStat: 1.85, recBase: 300, regenPer: 6,
+  nexUp: { hp: 120, atk: 140, regen: 90 } };
+export const UPGRADES = { garen:'Garen Dios-Rey', ashe:'Ashe Reina de Freljord', annie:'Annie Reina Hextech', lux:'Lux Elementalista', malphite:'Malphite Monolito', soraka:'Soraka Guardiana Estelar',
+  darius:'Darius Dios-Rey', jinx:'Jinx Star Guardian', leona:'Leona Eclipse Solar', teemo:'Teemo Omega', yasuo:'Yasuo Luna de Sangre', ezreal:'Ezreal Pulsefire' };
+export const DIFFS = { facil: { name:'Fácil', spend:.6, bonus:0, merc:.12, workers:.6, upg:.0, nex:0, ready:20 },
+  normal: { name:'Normal', spend:.85, bonus:0, merc:.25, workers:1, upg:.3, nex:.2, ready:10 },
+  dificil: { name:'Difícil', spend:1, bonus:40, merc:.4, workers:1.2, upg:.6, nex:.5, ready:3 },
+  locura: { name:'Locura', spend:1, bonus:110, merc:.5, workers:1.4, upg:.8, nex:.7, ready:1 } };
 
 // fx: nombre de efecto visual que el render sabe pintar
 export const FIGHTERS = [
@@ -66,7 +73,7 @@ export const CREEPS = {
   wolf:    { name:'Lobo Sombrío', k:'wolf', hp:95, dmg:15, aspd:1.3, range:1.7, speed:5.2, armor:0, melee:true, s:1, bounty:3 },
   raptor:  { name:'Raptor', k:'raptor', hp:90, dmg:16, aspd:1.2, range:2.6, speed:5, armor:0, melee:true, s:1, bounty:3 },
   krug:    { name:'Krug', k:'krug', hp:420, dmg:24, aspd:.7, range:2, speed:2.2, armor:14, melee:true, s:1.25, bounty:6 },
-  cannon:  { name:'Súbdito de Asedio', k:'cannon', hp:260, dmg:42, aspd:.55, range:8, speed:2.6, armor:8, melee:false, s:1.2, bounty:6, proj:{color:0xff8a3d,speed:12,size:.25} },
+  cannon:  { name:'Súbdito de Asedio', k:'cannon', hp:240, dmg:34, aspd:.55, range:6.5, speed:2.6, armor:8, melee:false, s:1.2, bounty:6, proj:{color:0xff8a3d,speed:12,size:.25} },
   blue:    { name:'Centinela Azul', k:'buff_blue', hp:620, dmg:30, aspd:.8, range:2.2, speed:2.8, armor:14, melee:true, s:1.5, bounty:9, ability:{type:'nova',cd:6,dmg:45,r:3,stun:.8,self:true,fx:'frost'} },
   red:     { name:'Brambleback Rojo', k:'buff_red', hp:640, dmg:34, aspd:.8, range:2.2, speed:2.8, armor:14, melee:true, s:1.5, bounty:9, ability:{type:'poison',cd:4,dps:18,t:4,fx:'fire'} },
   herald:  { name:'Heraldo de la Grieta', k:'herald', hp:2600, dmg:70, aspd:.6, range:2.6, speed:2.8, armor:25, melee:true, s:2.1, bounty:40, boss:true, ability:{type:'nova',cd:6,dmg:90,r:3.6,stun:1.2,self:true,fx:'void'} },
@@ -87,7 +94,7 @@ export const WAVES = [
   { name:'Súbditos Magos', g:[{c:'melee',n:6},{c:'caster',n:4}] },
   { name:'Gromp', g:[{c:'gromp',n:6}] },
   { name:'Lobos Sombríos', g:[{c:'wolf',n:14}] },
-  { name:'Raptores', g:[{c:'raptor',n:14}] },
+  { name:'Raptores', g:[{c:'raptor',n:12}] },
   { name:'Krugs', g:[{c:'krug',n:7}] },
   { name:'Asedio', g:[{c:'cannon',n:6},{c:'melee',n:8}] },
   { name:'Centinelas Azules', g:[{c:'blue',n:5},{c:'caster',n:6}] },
@@ -118,5 +125,5 @@ export const MERCS = [
 CREEPS.scuttle = { name:'Cangrejo Escurridizo', k:'scuttle', hp:120, dmg:9, aspd:1.1, range:1.5, speed:5.4, armor:4, melee:true, s:.9, bounty:0 };
 CREEPS.chogath = { name:"Cho'Gath", k:'chogath', hp:3800, dmg:120, aspd:.65, range:2.6, speed:3, armor:30, melee:true, s:2.3, bounty:0, ability:{type:'nova',cd:6,dmg:140,r:3.8,stun:1.1,self:true,fx:'void'} };
 
-export const waveScale = w => Math.pow(1.13, w - 1);
+export const waveScale = w => Math.pow(1.11, w - 1);
 export const mercScale = w => 1 + 0.12 * (w - 1);

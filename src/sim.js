@@ -4,18 +4,36 @@ import { GRID, LANE, CFG, FIGHTERS, CREEPS, WAVES, MERCS, waveScale, mercScale }
 export const FBY = Object.fromEntries(FIGHTERS.map(f => [f.id, f]));
 export const MBY = Object.fromEntries(MERCS.map(m => [m.id, m]));
 export const cellPos = (c, r) => ({ x: (c - (GRID.cols - 1) / 2) * GRID.cell, z: GRID.z0 + (r + .5) * GRID.cell });
-export const laneX = side => (side === 0 ? -36 : 36);
+let LANES = [-36, 36];
+// Distribución de carriles: 2 (1v1) o 4 (2v2). Carriles 0,1 = equipo azul en 2v2; 2,3 = equipo rojo.
+export function setLayout(n) { LANES = n === 4 ? [-114, -38, 38, 114] : [-36, 36]; }
+export const laneX = i => LANES[i];
+export const laneCount = () => LANES.length;
+export const teamOfLane = (i, n = LANES.length) => (n === 4 ? (i < 2 ? 0 : 1) : i);
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 
 export class Sim {
-  constructor() {
+  // opts: { lanes: 2|4, players: [{ name, bot, diff }] }
+  constructor(opts = {}) {
+    const n = opts.lanes === 4 ? 4 : 2; this.n = n;
     this.t = 0; this.wave = 0; this.phase = 'build'; this.timer = CFG.buildTime;
     this.ents = []; this.projs = []; this.delayed = []; this.ev = []; this.nid = 1; this.over = null; this.combatT = 0;
-    this.players = [0, 1].map(side => ({
-      side, gold: CFG.startGold, income: CFG.baseIncome, workers: 0, nexusHp: CFG.nexusHp, nexusMax: CFG.nexusHp,
-      grid: new Array(GRID.cols * GRID.rows).fill(null), queue: [], ready: false, nexusCd: 0, kills: 0, leaks: 0, nexus: { isNexus: true, x: 0, z: LANE.nexusZ, r: 2.4, lane: side },
-    }));
+    const nexMax = n === 4 ? CFG.nexusHp2v2 : CFG.nexusHp;
+    this.teams = [0, 1].map(t => ({ t, hp: nexMax, max: nexMax, upg: { hp: 0, atk: 0, regen: 0 } }));
+    this.players = [...Array(n).keys()].map(side => {
+      const po = (opts.players || [])[side] || {};
+      return { side, team: teamOfLane(side, n), name: po.name || ('Jugador ' + (side + 1)), bot: !!po.bot, diff: po.diff || 'normal',
+        gold: CFG.startGold, myth: CFG.startMyth, income: CFG.baseIncome, workers: CFG.startWorkers,
+        grid: new Array(GRID.cols * GRID.rows).fill(null), queue: [], ready: false, nexusCd: 0, kills: 0, leaks: 0, sent: 0,
+        nexus: { isNexus: true, x: 0, z: LANE.nexusZ, r: 2.4, lane: side } };
+    });
   }
+  target(side) { return (side + this.n / 2) % this.n; } // carril que recibe los mercenarios de `side`
+  T(side) { return this.teams[this.players[side].team]; }
+  workerCost(side) { return CFG.pcost + this.P(side).workers * CFG.pcostStep; }
+  value(side) { return this.P(side).grid.reduce((a, e) => a + (e ? e.value : 0), 0); }
+  recValue(w = this.wave) { return Math.round(CFG.recBase * Math.pow(1.16, w)); }
+  nexusUpCost(kind) { const l = this.teams[0].upg[kind]; return 0; }
   emit(type, d = {}) { d.type = type; this.ev.push(d); }
   P(side) { return this.players[side]; }
 
@@ -26,28 +44,58 @@ export class Sim {
     if (!d || !this.canPlace(side, c, r) || p.gold < d.cost) return null;
     p.gold -= d.cost;
     const e = this.mkEnt({ lane: side, team: 'def', def: d, kind: 'fighter', owner: side, pos: cellPos(c, r), cell: [c, r], radius: .75, ab: d.ability, proj: d.proj });
+    e.value = d.cost; e.fresh = d.cost; e.up = 0;
     p.grid[r * GRID.cols + c] = e;
     this.emit('place', { e });
     return e;
   }
+  upgradeCost(e) { return Math.round(e.def.cost * CFG.upMul); }
+  upgrade(side, c, r) {
+    const p = this.P(side), e = p.grid[r * GRID.cols + c];
+    if (!e || e.up || this.phase !== 'build') return false; const cost = this.upgradeCost(e); if (p.gold < cost) return false;
+    p.gold -= cost; e.up = 1; e.value += cost; e.fresh += cost;
+    e.maxHp = e.hp = e.def.hp * CFG.upStat; e.dmg = e.def.dmg * CFG.upStat; e.armor = e.def.armor + 12; e.aspd = e.def.aspd * 1.1;
+    this.emit('upgrade', { e }); return true;
+  }
+  sellValue(e) { return Math.round(e.fresh + (e.value - e.fresh) * .5); }
   sell(side, c, r) {
     const p = this.P(side), e = p.grid[r * GRID.cols + c];
     if (!e || this.phase !== 'build') return false;
-    p.gold += e.def.cost; p.grid[r * GRID.cols + c] = null;
-    this.ents.splice(this.ents.indexOf(e), 1); this.emit('sell', { e });
+    const v = this.sellValue(e); p.gold += v; p.grid[r * GRID.cols + c] = null;
+    this.ents.splice(this.ents.indexOf(e), 1); this.emit('sell', { e, v });
     return true;
   }
   buyWorker(side) {
-    const p = this.P(side);
-    if (p.workers >= CFG.maxP || p.gold < CFG.pcost) return false;
-    p.gold -= CFG.pcost; p.workers++; p.income += CFG.pinc; this.emit('worker', { side }); return true;
+    const p = this.P(side), c = this.workerCost(side);
+    if (p.workers >= CFG.maxP || p.gold < c) return false;
+    p.gold -= c; p.workers++; this.emit('worker', { side }); return true;
   }
   buyMerc(side, id) {
     const m = MBY[id], p = this.P(side);
-    if (!m || this.phase !== 'build' || p.gold < m.cost) return false;
-    p.gold -= m.cost; p.income += m.inc; p.queue.push(m); this.emit('merc', { side, m }); return true;
+    if (!m || this.phase !== 'build' || p.myth < m.cost) return false;
+    p.myth -= m.cost; p.income += m.inc; p.sent += m.cost; p.queue.push(m); this.emit('merc', { side, m }); return true;
+  }
+  nexusCost(side, kind) { return Math.round(CFG.nexUp[kind] * (this.T(side).upg[kind] + 1)); }
+  upgradeNexus(side, kind) {
+    const p = this.P(side), T = this.T(side); if (!(kind in T.upg) || T.upg[kind] >= 5) return false;
+    const c = this.nexusCost(side, kind); if (p.myth < c) return false;
+    p.myth -= c; T.upg[kind]++; if (kind === 'hp') { T.max += 500; T.hp += 500; }
+    this.emit('nexusUp', { side, kind, lvl: T.upg[kind] }); return true;
   }
   setReady(side, v = true) { this.P(side).ready = v; }
+  // aplica un comando (desde la red o la UI)
+  command(side, c) {
+    switch (c.a) {
+      case 'place': return !!this.place(side, c.id, c.c, c.r);
+      case 'sell': return this.sell(side, c.c, c.r);
+      case 'upgrade': return this.upgrade(side, c.c, c.r);
+      case 'worker': return this.buyWorker(side);
+      case 'merc': return this.buyMerc(side, c.id);
+      case 'nexus': return this.upgradeNexus(side, c.kind);
+      case 'ready': if (this.phase === 'build') this.setReady(side, !!c.v); return true;
+    }
+    return false;
+  }
 
   mkEnt(o) {
     const d = o.def, sc = o.scale || 1;
@@ -55,7 +103,7 @@ export class Sim {
       id: this.nid++, lane: o.lane, team: o.team, kind: o.kind, owner: o.owner, def: d, cell: o.cell || null,
       x: o.pos.x, z: o.pos.z, hx: o.pos.x, hz: o.pos.z, face: o.team === 'def' ? Math.PI : 0,
       maxHp: d.hp * (o.hpMul || 1), hp: d.hp * (o.hpMul || 1), dmg: d.dmg * (o.dmgMul || 1), aspd: d.aspd, range: d.range, speed: d.speed, armor: d.armor,
-      radius: o.radius, ab: o.ab || null, abCd: o.ab ? Math.random() * 2 + 1 : 0, cd: Math.random() * .5, atkT: -1, hit: false, castT: 0,
+      radius: o.radius, ck: o.ck || null, up: 0, ab: o.ab || null, abCd: o.ab ? Math.random() * 2 + 1 : 0, cd: Math.random() * .5, atkT: -1, hit: false, castT: 0,
       stun: 0, slow: 0, slowAmt: 0, dot: 0, dotDps: 0, dotT: 0, tgt: null, moving: false, dead: false, deathT: 0, rt: 0, proj: o.proj || d.proj, boss: !!d.boss, s: d.s || 1,
     };
     this.ents.push(e); return e;
@@ -63,13 +111,13 @@ export class Sim {
 
   spawnCreep(lane, cid, o) {
     const d = CREEPS[cid];
-    return this.mkEnt({ lane, team: 'att', def: d, kind: o.owner === 'wave' ? 'creep' : 'merc', owner: o.owner, pos: o.pos, hpMul: o.mul, dmgMul: Math.pow(o.mul, .8), radius: Math.min(1.5, .45 * d.s + .15), ab: d.ability, proj: d.proj });
+    return this.mkEnt({ lane, team: 'att', def: d, kind: o.owner === 'wave' ? 'creep' : 'merc', owner: o.owner, pos: o.pos, hpMul: o.mul, dmgMul: Math.pow(o.mul, .8), radius: Math.min(1.5, .45 * d.s + .15), ab: d.ability, proj: d.proj, ck: cid });
   }
 
   startCombat() {
     this.phase = 'combat'; this.combatT = 0;
     const w = WAVES[this.wave], sc = waveScale(this.wave + 1), ms = mercScale(this.wave + 1);
-    for (const lane of [0, 1]) {
+    for (let lane = 0; lane < this.n; lane++) {
       let idx = 0;
       for (const g of w.g) for (let i = 0; i < g.n; i++, idx++) {
         const per = 9, col = idx % per, row = Math.floor(idx / per);
@@ -77,9 +125,10 @@ export class Sim {
       }
       // mercenarios enviados por el rival
       let mi = 0;
-      for (const m of this.P(1 - lane).queue) for (let i = 0; i < m.n; i++, mi++) {
+      const src = this.players.find(q => this.target(q.side) === lane).side;
+      for (const m of this.P(src).queue) for (let i = 0; i < m.n; i++, mi++) {
         const col = mi % 8, row = Math.floor(mi / 8);
-        this.spawnCreep(lane, m.c, { owner: 1 - lane, mul: ms, pos: { x: (col - 3.5) * 2.0, z: LANE.spawnZ - 9 - row * 2.2 } });
+        this.spawnCreep(lane, m.c, { owner: src, mul: ms, pos: { x: (col - 3.5) * 2.0, z: LANE.spawnZ - 9 - row * 2.2 } });
       }
     }
     for (const p of this.players) p.queue = [];
@@ -100,7 +149,7 @@ export class Sim {
     this.projs.length = 0; this.delayed.length = 0;
     this.timer = CFG.buildTime;
     this.emit('wave_end', { wave: w });
-    if (this.wave >= CFG.totalWaves) this.finish(this.players[0].nexusHp >= this.players[1].nexusHp ? 0 : 1, 'waves');
+    if (this.wave >= CFG.totalWaves) this.finish(this.teams[0].hp / this.teams[0].max >= this.teams[1].hp / this.teams[1].max ? 0 : 1, 'waves');
   }
   finish(winner, why) { if (this.over) return; this.over = { winner, why }; this.phase = 'over'; this.emit('over', { winner, why }); }
 
@@ -109,9 +158,10 @@ export class Sim {
     if (t.dead || this.over) return;
     if (!o.raw) amt *= 100 / (100 + (t.armor || 0));
     if (t.isNexus) {
-      const p = this.P(t.lane); p.nexusHp = Math.max(0, p.nexusHp - amt); p.leaks++;
+      amt *= .45; // las estructuras reciben menos daño
+      const p = this.P(t.lane), T = this.T(t.lane); T.hp = Math.max(0, T.hp - amt); p.leaks++;
       this.emit('hit', { t, amt, nexus: true });
-      if (p.nexusHp <= 0) this.finish(1 - t.lane, 'nexus');
+      if (T.hp <= 0) this.finish(1 - p.team, 'nexus');
       return;
     }
     t.hp -= amt; t.flash = .12;
@@ -188,7 +238,9 @@ export class Sim {
     this.t += dt;
     for (let i = this.delayed.length - 1; i >= 0; i--) { const d = this.delayed[i]; d.t -= dt; if (d.t <= 0) { this.delayed.splice(i, 1); d.fn(); } }
     for (const e of this.ents) { if (e.flash > 0) e.flash -= dt; }
+    for (const p of this.players) p.myth += p.workers * CFG.mythRate * dt;
     if (this.phase === 'build') {
+      for (const T of this.teams) T.hp = Math.min(T.max, T.hp + T.upg.regen * CFG.regenPer * dt);
       this.timer -= dt;
       if (this.timer <= 0 || this.players.every(p => p.ready)) this.startCombat();
       return;
@@ -205,10 +257,10 @@ export class Sim {
   }
 
   stepNexus(p, dt) {
-    p.nexusCd -= dt; if (p.nexusCd > 0 || p.nexusHp <= 0) return;
-    let best = null, bd = 10;
+    p.nexusCd -= dt; if (p.nexusCd > 0 || this.T(p.side).hp <= 0) return;
+    let best = null, bd = 11;
     for (const e of this.ents) if (!e.dead && e.lane === p.side && e.team === 'att') { const d = Math.hypot(e.x - p.nexus.x, e.z - p.nexus.z); if (d < bd) { bd = d; best = e; } }
-    if (best) { p.nexusCd = 1.1; const dmg = 70 * (1 + .3 * this.wave); this.emit('nexusShot', { side: p.side, t: best }); this.hurt({ nexus: true }, best, dmg, { raw: false }); }
+    if (best) { p.nexusCd = .9; const dmg = 150 * (1 + .4 * this.wave) * (1 + .35 * this.T(p.side).upg.atk); this.emit('nexusShot', { side: p.side, t: best }); this.hurt({ nexus: true }, best, dmg, { raw: false }); }
   }
 
   stepEnt(e, dt) {
@@ -293,4 +345,21 @@ export class Sim {
     for (const e of es) { e.x = Math.max(-LANE.half - 3, Math.min(LANE.half + 3, e.x)); e.z = Math.max(LANE.spawnZ - 14, Math.min(LANE.nexusZ + 1, e.z)); }
   }
   weight(e) { if (e.team === 'def' && !e.moving && e.atkT < 0 && Math.hypot(e.x - e.hx, e.z - e.hz) < .6) return .12; return e.boss ? .3 : 1; }
+}
+
+// ─── serialización para el modo en línea ───
+const slim = e => !e || typeof e !== 'object' ? e : (e.isNexus ? { isNexus: true, lane: e.lane, x: e.x, z: e.z } : e.nexus || e.x === undefined || !e.def ? { nexus: true } :
+  { id: e.id, lane: e.lane, x: +e.x.toFixed(2), z: +e.z.toFixed(2), team: e.team, kind: e.kind, owner: e.owner, boss: e.boss, up: e.up,
+    def: { id: e.def.id, cost: e.def.cost, bounty: e.def.bounty }, ab: e.ab ? { r: e.ab.r } : null });
+export function netEvents(evs) { return evs.map(ev => { const o = { ...ev }; for (const k of ['e', 't', 'src']) if (o[k]) o[k] = slim(o[k]); return o; }); }
+const r2 = v => Math.round(v * 100) / 100;
+export function snapshot(sim) {
+  return {
+    n: sim.n, ph: sim.phase, tm: r2(sim.timer), wv: sim.wave, ov: sim.over, teams: sim.teams,
+    pl: sim.players.map(p => ({ name: p.name, bot: p.bot, team: p.team, g: Math.floor(p.gold), my: Math.floor(p.myth), inc: p.income, wk: p.workers, rd: p.ready, k: p.kills, q: p.queue.map(m => m.id), sent: p.sent })),
+    e: sim.ents.map(e => [e.id, e.lane, e.team === 'def' ? 0 : 1, e.kind === 'fighter' ? (e.def.id) : e.ck, r2(e.x), r2(e.z), r2(e.face), Math.round(e.hp), Math.round(e.maxHp),
+      (e.dead ? 1 : 0) | (e.moving ? 2 : 0) | (e.stun > 0 ? 4 : 0) | (e.slow > 0 ? 8 : 0) | (e.dot > 0 ? 16 : 0) | (e.boss ? 32 : 0) | (e.up ? 64 : 0) | (e.kind === 'merc' ? 128 : 0),
+      r2(e.atkT), r2(e.aspd), r2(e.castT), r2(e.deathT), r2(e.speed), e.cell ? e.cell[0] : -1, e.cell ? e.cell[1] : -1, e.owner === 'wave' ? -1 : e.owner, r2(e.radius), Math.round(e.value || 0), Math.round(e.fresh || 0)]),
+    p: sim.projs.filter(p => !(p.delay > 0)).map(p => [p.id, p.src.lane, r2(p.x), r2(p.z), p.color, p.size]),
+  };
 }

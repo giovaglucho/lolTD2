@@ -12,32 +12,35 @@
 
 <div id="hud" class="hidden">
   <div id="top">
-    <div class="nexbar left"><div class="nlabel">TU NEXO</div><div class="bar"><i id="hp0"></i><b id="hp0t"></b></div></div>
+    <div class="nexbar left"><div class="nlabel" id="t0name">NEXO AZUL</div><div class="bar"><i id="hp0"></i><b id="hp0t"></b></div><div class="nup" id="nup0"></div></div>
     <div id="center">
       <div id="waveName"></div>
       <div id="timer">0</div>
       <div id="phaseLbl">CONSTRUCCIÓN</div>
     </div>
-    <div class="nexbar right"><div class="nlabel">NEXO ENEMIGO</div><div class="bar red"><i id="hp1"></i><b id="hp1t"></b></div></div>
+    <div class="nexbar right"><div class="nlabel" id="t1name">NEXO ROJO</div><div class="bar red"><i id="hp1"></i><b id="hp1t"></b></div><div class="nup" id="nup1"></div></div>
   </div>
   <div id="eco">
-    <div class="pill gold"><span class="ico">◆</span><b id="gold">0</b><small>oro</small></div>
-    <div class="pill inc"><span class="ico">▲</span><b id="income">0</b><small>/oleada</small></div>
-    <div class="pill"><span class="ico">☻</span><b id="workers">0</b><small>poros</small></div>
-    <div class="pill"><span class="ico">⚔</span><b id="army">0</b><small>/60</small></div>
+    <div class="pill gold" title="Oro: campeones, mejoras y poros"><span class="ico">◆</span><b id="gold">0</b><small>oro</small></div>
+    <div class="pill myth" title="Esencia Hextech: la generan los poros; sirve para mercenarios y mejoras del Nexo"><span class="ico">✦</span><b id="myth">0</b><small id="mythRate">esencia</small></div>
+    <div class="pill inc" title="Oro que recibes al terminar cada oleada"><span class="ico">▲</span><b id="income">0</b><small>/oleada</small></div>
+    <div class="pill val" title="Valor de tu ejército frente al recomendado para la oleada"><span class="ico">⚔</span><b id="value">0</b><small id="rec">/ 0 rec.</small></div>
   </div>
+  <div id="players"></div>
   <div id="ctrls">
-    <button id="bView" title="Tab">Ver línea rival <kbd>Tab</kbd></button>
-    <button id="bSpeed" title="F">Velocidad ×1 <kbd>F</kbd></button>
+    <button id="bView">Ver otra línea <kbd>Tab</kbd></button>
+    <button id="bSpeed">Velocidad ×1 <kbd>F</kbd></button>
     <button id="bMute">Sonido</button>
+    <button id="bQuit">Salir</button>
   </div>
   <div id="left">
     <div id="next"></div>
     <div id="info" class="hidden"></div>
   </div>
   <div id="right">
-    <h3>Mercenarios <small>enviar al rival</small></h3>
-    <div id="mercs"></div>
+    <div class="tabs"><button data-tab="mercs" class="on">Mercenarios</button><button data-tab="nexus">Nexo</button></div>
+    <div id="tabMercs"><div class="hint" id="mercTarget"></div><div id="mercs"></div></div>
+    <div id="tabNexus" class="hidden"><div class="hint">Mejoras compartidas por el equipo (esencia)</div><div id="nexusUps"></div></div>
     <button id="bPoro" class="poro"></button>
   </div>
   <div id="bottom">
@@ -53,17 +56,31 @@
   <div class="tbox">
     <div class="crest">◈</div>
     <h1>RIFT LEGION</h1>
-    <h2>Tower Defense de la Grieta del Invocador</h2>
-    <p class="lead">Coloca campeones en tu plataforma, contrata poros para aumentar tu economía y envía mercenarios al rival. Sobrevive las 20 oleadas de monstruos y protege tu Nexo hasta el final… o destruye el del enemigo.</p>
-    <div class="how">
-      <div><b>Clic</b> colocar campeón</div><div><b>Clic der.</b> vender</div><div><b>1-9,0,-,=</b> elegir campeón</div>
-      <div><b>Espacio</b> listo</div><div><b>Tab</b> ver línea rival</div><div><b>WASD / rueda</b> cámara</div>
+    <h2>Legion Tower Defense en la Grieta del Invocador</h2>
+    <div class="namerow"><label>Invocador</label><input id="pname" maxlength="16" placeholder="Tu nombre" /><div id="profile"></div></div>
+    <div class="modes">
+      <div class="mode">
+        <h3>Contra la IA</h3>
+        <div class="seg" id="segLanes"><button data-v="2" class="on">1 vs 1</button><button data-v="4">2 vs 2</button></div>
+        <div class="seg" id="segDiff"><button data-v="facil">Fácil</button><button data-v="normal" class="on">Normal</button><button data-v="dificil">Difícil</button><button data-v="locura">Locura</button></div>
+        <button class="go" id="bLocal">Jugar</button>
+      </div>
+      <div class="mode online">
+        <h3>En línea 2 vs 2</h3>
+        <p class="small">Juega con otros invocadores. <b>Clásico</b>: sin puntuación, se completa con bots si falta gente. <b>Ranked</b>: 4 jugadores reales, ganas o pierdes MMR.</p>
+        <div class="row"><button class="go" id="bClassic">Clásico</button><button class="go hard" id="bRanked">Ranked</button></div>
+        <div id="qstatus" class="small"></div>
+      </div>
     </div>
-    <div class="diff"><button data-h="1" class="go">Normal</button><button data-h="1.7" class="go hard">Difícil</button></div>
+    <div class="how">
+      <div><b>Clic</b> colocar / seleccionar</div><div><b>U · X</b> mejorar · vender</div><div><b>1-9,0,-,=</b> campeones</div>
+      <div><b>Espacio</b> listo</div><div><b>Tab · C</b> otras líneas · la tuya</div><div><b>WASD / rueda</b> cámara</div>
+    </div>
+    <div id="lb"></div>
     <div id="loading">Forjando campeones…</div>
   </div>
 </div>
-<div id="end" class="hidden"><div class="ebox"><h1 id="eTitle"></h1><p id="eSub"></p><div id="eStats"></div><button id="eAgain" class="go">Jugar de nuevo</button></div></div>
+<div id="end" class="hidden"><div class="ebox"><h1 id="eTitle"></h1><p id="eSub"></p><div id="eStats"></div><button id="eAgain" class="go">Volver al menú</button></div></div>
 <script type="module" src="/src/main.js"></script>
 </body>
 </html>
