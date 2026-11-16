@@ -6,7 +6,8 @@ import { aiTurn, aiTick } from './ai.js';
 import { NetSim } from './net.js';
 import { FX, FXCOL } from './fx.js';
 import { sfx, initAudio } from './sfx.js';
-import { GRID, LANE, CFG, WAVES, CREEPS, FIGHTERS, MERCS, UPGRADES, waveScale } from './data.js';
+import { GRID, LANE, CFG, WAVES, CREEPS, MERCS, waveScale } from './data.js';
+import { SPELL_BY } from './content/spells.js';
 
 const Y0 = .17;
 export class Game {
@@ -61,9 +62,9 @@ export class Game {
 
   // ───── entidades ─────
   makeView(e) {
-    const d = e.def, kind = e.kind === 'fighter' ? d.id : d.k, ot = e.owner === 'wave' ? -1 : this.sim.P(e.owner).team, tint = ot === 0 ? 'blue' : 'red';
+    const d = e.def, kind = e.kind === 'fighter' ? (d.model || d.id) : e.kind === 'summon' ? (d.model || 'summon') : d.k, ot = e.owner === 'wave' ? -1 : this.sim.P(e.owner).team, tint = ot === 0 ? 'blue' : 'red';
     const model = buildModel(kind, tint, { upgraded: !!e.up }); model.up = !!e.up; model.phase = Math.random() * 6.28; const vr = e.kind === 'fighter' ? 0 : (Math.random() - .5) * .2;  const group = new THREE.Group(); group.add(model.g);
-    const sc = (e.kind === 'fighter' ? 1.3 : d.s) * (1 + vr); model.g.scale.setScalar(sc);
+    const sc = (e.kind === 'fighter' ? 1.3 : e.kind === 'summon' ? 1.3 * (d.s || 1) : d.s) * (1 + vr); model.g.scale.setScalar(sc);
     const box = new THREE.Box3().setFromObject(model.g); const h = box.max.y;
     const side = e.kind === 'fighter' ? this.sim.P(e.lane).team : (e.owner === 'wave' ? 'g' : ot);
     const col = side === 0 ? 0x4aa8ff : side === 1 ? 0xff5a4a : 0xb04aff;
@@ -87,11 +88,13 @@ export class Game {
       const dying = e.dead;
       if (dying) {
         const k = Math.min(1, e.deathT / .45); v.model.g.rotation.x = -k * 1.45 * (v.model.rig.flyer ? .5 : 1); g.position.y = Y0 - Math.max(0, e.deathT - 1.2) * .8 - (v.model.rig.flyer ? (1 - k) * -.0 : 0);
-        v.bar.visible = false; v.ring.visible = false; if (e.deathT > (e.team === 'def' ? 1.5 : 1.9)) g.visible = false; v.model.g.scale.setScalar((e.kind === 'fighter' ? 1.3 : e.def.s) * (v.vr || 1) * (e.deathT > 1.2 ? Math.max(.01, 1 - (e.deathT - 1.2) * 1.4) : 1));
+        v.bar.visible = false; v.ring.visible = false; if (e.deathT > (e.team === 'def' ? 1.5 : 1.9)) g.visible = false; v.model.g.scale.setScalar((e.kind === 'fighter' ? 1.3 : e.kind === 'summon' ? 1.3 * (e.def.s || 1) : e.def.s) * (v.vr || 1) * (e.deathT > 1.2 ? Math.max(.01, 1 - (e.deathT - 1.2) * 1.4) : 1));
       } else {
-        g.visible = true; v.model.g.rotation.x = 0; v.model.g.scale.setScalar((e.kind === 'fighter' ? 1.3 : e.def.s) * (v.vr || 1) * (.4 + .6 * v.appear)); v.bar.visible = e.hp < e.maxHp || e.kind === 'fighter' && false ? true : e.hp < e.maxHp; v.ring.visible = true;
+        g.visible = true; v.model.g.rotation.x = 0; v.model.g.scale.setScalar((e.kind === 'fighter' ? 1.3 : e.kind === 'summon' ? 1.3 * (e.def.s || 1) : e.def.s) * (v.vr || 1) * (.4 + .6 * v.appear)); v.bar.visible = e.hp < e.maxHp || e.kind === 'fighter' && false ? true : e.hp < e.maxHp; v.ring.visible = true;
         const r = Math.max(.001, e.hp / e.maxHp); v.fg.scale.x = v.w * r; v.fg.position.x = -(v.w * (1 - r)) / 2; v.bar.quaternion.copy(this.world.camera.quaternion);
         if (e.stun > 0) { v.model.g.rotation.z = Math.sin(this.time * 30) * .06; if (Math.random() < dt * 8) this.fx.burst(g.position.x, v.h + 1.1, g.position.z, { n: 1, color: 0xffee66, speed: .8, up: .4, life: .5, size: .35, g: 0 }); } else v.model.g.rotation.z = 0;
+        if (e.shield > 0) { if (!v.bubble) { v.bubble = new THREE.Mesh(this._bubbleGeo ??= new THREE.SphereGeometry(1, 20, 14), this._bubbleMat ??= new THREE.MeshBasicMaterial({ color: 0xffe9a0, transparent: true, opacity: .22, depthWrite: false, blending: THREE.AdditiveBlending })); v.group.add(v.bubble); } v.bubble.visible = true; v.bubble.scale.set(v.w * .55 + .4, v.h * .6 + .3, v.w * .55 + .4); v.bubble.position.y = v.h * .5; } else if (v.bubble) v.bubble.visible = false;
+        v.model.g.visible = !(e.stealthT > 0) || Math.sin(this.time * 30) > .7;
         if (e.slow > 0 && Math.random() < dt * 6) this.fx.burst(g.position.x, 1, g.position.z, { n: 1, color: 0x9fe4ff, speed: .5, up: .5, life: .6, size: .3, g: 0 });
         if (e.dot > 0 && Math.random() < dt * 8) this.fx.burst(g.position.x, v.h * .8, g.position.z, { n: 1, color: 0x8aff5a, speed: .5, up: 1.2, life: .6, size: .3, g: -2 });
       }
@@ -108,11 +111,29 @@ export class Game {
     const alive = new Set();
     for (const p of this.sim.projs) {
       if (p.delay > 0) continue; alive.add(p.id); let pv = this.pviews.get(p.id);
-      if (!pv) { const mesh = new THREE.Group(); const core = new THREE.Mesh(new THREE.SphereGeometry(1, 10, 8), new THREE.MeshBasicMaterial({ color: p.color })); core.scale.setScalar(p.size); const halo = new THREE.Sprite(this.fx.colMat(p.color)); halo.scale.setScalar(p.size * 6); mesh.add(core, halo); this.world.scene.add(mesh); pv = { mesh, p, trail: 0 }; this.pviews.set(p.id, pv); sfx.shoot(); }
+      if (!pv) { const mesh = this.makeProj(p); this.world.scene.add(mesh); pv = { mesh, p, trail: 0 }; this.pviews.set(p.id, pv); sfx.shoot(); }
+      if (p.dir !== undefined) pv.mesh.rotation.y = p.dir;
       const lx = laneX(p.src.lane); pv.mesh.position.set(lx + p.x, p.y ?? 1.2, p.z);
+      for (const ch of pv.mesh.children) if (ch.userData.spin) ch.rotation.y += .5;
       pv.trail -= 1; if (pv.trail <= 0) { pv.trail = 1; this.fx.burst(lx + p.x, p.y ?? 1.2, p.z, { n: 1, color: p.color, speed: .2, up: .1, life: .3, size: p.size * 3, g: 0 }); }
     }
     for (const [id, pv] of this.pviews) if (!alive.has(id)) { this.world.scene.remove(pv.mesh); this.pviews.delete(id); }
+  }
+  makeProj(p) { // forma del proyectil según el campeón
+    const g = new THREE.Group(), c = p.color, sz = p.size || .15, basic = c => new THREE.MeshBasicMaterial({ color: c });
+    this._pg ??= { sph: new THREE.SphereGeometry(1, 10, 8), cyl: new THREE.CylinderGeometry(1, 1, 1, 6), cone: new THREE.ConeGeometry(1, 1, 6), oct: new THREE.OctahedronGeometry(1), box: new THREE.BoxGeometry(1, 1, 1) };
+    const G = this._pg, add = (geo, mat, sc, pos, rot) => { const m = new THREE.Mesh(geo, mat); m.scale.set(...sc); if (pos) m.position.set(...pos); if (rot) m.rotation.set(...rot); g.add(m); return m; };
+    switch (p.shape) {
+      case 'arrow': add(G.cyl, basic(0xf4f0e0), [.025, .9, .025], [0, 0, 0], [Math.PI / 2, 0, 0]); add(G.cone, basic(c), [.07, .2, .07], [0, 0, .5], [Math.PI / 2, 0, 0]); break;
+      case 'bullet': add(G.cyl, basic(c), [sz * .5, sz * 4, sz * .5], [0, 0, 0], [Math.PI / 2, 0, 0]); break;
+      case 'bolt': add(G.oct, basic(c), [sz * .6, sz * .6, sz * 3]); break;
+      case 'blade': { const b = add(G.box, basic(c), [sz * 2.4, .03, sz * .8]); b.userData.spin = 1; break; }
+      case 'rocket': add(G.cyl, basic(0xe8e0d0), [sz * .7, sz * 3.5, sz * .7], [0, 0, 0], [Math.PI / 2, 0, 0]); add(G.cone, basic(c), [sz * .7, sz * 1.4, sz * .7], [0, 0, sz * 2.4], [Math.PI / 2, 0, 0]); break;
+      case 'star': { const s1 = add(G.oct, basic(c), [sz * 1.4, sz * 1.4, sz * .5]); s1.userData.spin = 1; break; }
+      default: add(G.sph, basic(c), [sz, sz, sz]);
+    }
+    const halo = new THREE.Sprite(this.fx.colMat(c)); halo.scale.setScalar(sz * 6); g.add(halo);
+    return g;
   }
   pos3(lane, x, z, y = 1) { return new THREE.Vector3(laneX(lane) + x, y, z); }
 
@@ -122,7 +143,7 @@ export class Game {
       switch (ev.type) {
         case 'hit': {
           const t = ev.t, lane = t.lane; const p = t.isNexus ? this.pos3(lane, t.x, t.z, 5) : this.pos3(lane, t.x, t.z, 2.2);
-          if (ev.amt >= 1) { const cls = t.isNexus ? 'nex' : t.team === 'def' ? 'dmgd' : (ev.big ? 'big' : ''); fx.text(p.x, p.y, p.z, Math.round(ev.amt), cls); }
+          if (ev.amt >= 1 && (this.dmgNumbers ?? true)) { const cls = t.isNexus ? 'nex' : t.team === 'def' ? 'dmgd' : ev.crit ? 'crit' : (ev.big ? 'big' : ''); fx.text(p.x, p.y, p.z, Math.round(ev.amt) + (ev.crit ? '!' : ''), cls); }
           if (t.isNexus) { fx.burst(p.x, 4, p.z + 1, { n: 10, color: 0xffa060, speed: 5, up: 4, life: .5, size: .7 }); if (lane === this.cam.view) fx.shake = .5; this.world.grade.uniforms.flash.value = lane === this.cam.view ? .12 : 0; sfx.nexus(); }
           else { fx.burst(p.x, 1.2, p.z, { n: ev.big ? 8 : 4, color: t.team === 'def' ? 0xff6a5a : 0xffe0a0, speed: 3, up: 2, life: .3, size: .35 }); sfx.hit(); }
           break;
@@ -137,7 +158,9 @@ export class Game {
           break;
         }
         case 'aoe': {
-          const c = FXCOL[ev.fx] ?? 0xffffff, lane = ev.e.lane, p = this.pos3(lane, ev.x, ev.z, .3);
+          const c = ev.color ?? FXCOL[ev.fx] ?? 0xffffff, lane = ev.e.lane, p = this.pos3(lane, ev.x, ev.z, .3);
+          if (ev.small) { fx.ring(p.x, p.z, ev.r * .8, c, { dur: .3, op: .5 }); fx.burst(p.x, .6, p.z, { n: 6, color: c, speed: ev.r * 1.5, up: 2, life: .35, size: .6, spread: ev.r * .5 }); break; }
+          if (ev.buff || ev.taunt) { fx.ring(p.x, p.z, ev.r, c, { dur: .7, op: .7 }); fx.burst(p.x, .3, p.z, { n: 24, color: c, speed: 1, up: 4, life: 1, size: .5, spread: ev.r, g: -1 }); sfx.magic(); break; }
           fx.ring(p.x, p.z, ev.r, c); fx.ring(p.x, p.z, ev.r * .6, 0xffffff, { dur: .35, op: .6 });
           fx.burst(p.x, .6, p.z, { n: 22, color: c, speed: ev.r * 1.8, up: 5, life: .6, size: .9, spread: ev.r * .5 });
           if (ev.fx === 'quake' || ev.fx === 'void') { fx.shake = Math.max(fx.shake, .6); sfx.boom(); } else sfx.magic();
@@ -145,19 +168,29 @@ export class Game {
           break;
         }
         case 'lob': {
-          const c = FXCOL[ev.fx] ?? 0xffffff, lane = ev.e.lane, a = this.pos3(lane, ev.x0, ev.z0, 2), b = this.pos3(lane, ev.x1, ev.z1, .5);
+          const c = ev.color ?? FXCOL[ev.fx] ?? 0xffffff, lane = ev.e.lane, a = this.pos3(lane, ev.x0, ev.z0, 2), b = this.pos3(lane, ev.x1, ev.z1, .5);
           for (let i = 0; i < 12; i++) fx.burst(a.x + (b.x - a.x) * i / 12, 1.5 + Math.sin(i / 12 * Math.PI) * 2.5, a.z + (b.z - a.z) * i / 12, { n: 2, color: c, speed: .4, up: .3, life: .45, size: .8, g: 0 });
-          fx.ring(b.x, b.z, ev.e.ab ? Math.max(1, ev.e.ab.r || 2) : 2, c, { dur: .35, op: .35 }); sfx.magic(); break;
+          fx.ring(b.x, b.z, Math.max(1, ev.r || (ev.e.ab && ev.e.ab.r) || 2), c, { dur: .35 + (ev.t || 0), op: .35 }); sfx.magic(); break;
         }
-        case 'beam': { const c = FXCOL[ev.fx] ?? 0xffffff, p = this.pos3(ev.e.lane, ev.x, ev.z, 0); fx.beam(p.x, p.z, ev.ux, ev.uz, ev.len, ev.w * .9, c, .5); sfx.magic(); break; }
+        case 'beam': { const c = ev.color ?? FXCOL[ev.fx] ?? 0xffffff, p = this.pos3(ev.e.lane, ev.x, ev.z, 0); fx.beam(p.x, p.z, ev.ux, ev.uz, ev.len, ev.w * .9, c, .5); sfx.magic(); break; }
         case 'heal': { const p = this.pos3(ev.t.lane, ev.t.x, ev.t.z, 0.4); fx.ring(p.x, p.z, 1.6, 0x7dffb0); fx.burst(p.x, 0.6, p.z, { n: 14, color: 0x7dffb0, speed: 1.2, up: 4, life: .9, size: .5, g: -1 }); fx.text(p.x, 2.4, p.z, '+' + Math.round(ev.amt), 'heal'); sfx.heal(); break; }
-        case 'poison': { const p = this.pos3(ev.t.lane, ev.t.x, ev.t.z, 1.5); fx.burst(p.x, 1.4, p.z, { n: 12, color: FXCOL[ev.fx] ?? 0x8aff5a, speed: 2, up: 2, life: .6, size: .6 }); break; }
-        case 'dash': { const a = this.pos3(ev.e.lane, ev.x0, ev.z0, 1), b = this.pos3(ev.e.lane, ev.x1, ev.z1, 1); fx.bolt(a, b, 0xcfefff, .3, .25); fx.ring(b.x, b.z, 2, 0xcfefff); sfx.magic(); break; }
+        case 'poison': { const p = this.pos3(ev.t.lane, ev.t.x, ev.t.z, 1.5); fx.burst(p.x, 1.4, p.z, { n: 12, color: ev.color ?? FXCOL[ev.fx] ?? 0x8aff5a, speed: 2, up: 2, life: .6, size: .6 }); break; }
+        case 'dash': { const c = ev.color ?? FXCOL[ev.fx] ?? 0xcfefff, a = this.pos3(ev.e.lane, ev.x0, ev.z0, 1), b = this.pos3(ev.e.lane, ev.x1, ev.z1, 1); fx.bolt(a, b, c, .3, .25); fx.ring(b.x, b.z, 2, c); for (let i = 0; i < 10; i++) fx.burst(a.x + (b.x - a.x) * i / 10, 1, a.z + (b.z - a.z) * i / 10, { n: 1, color: c, speed: .5, up: .5, life: .4, size: .6, g: 0 }); sfx.magic(); break; }
+        case 'chain': { const c = ev.color ?? FXCOL[ev.fx] ?? 0x9fd8ff, L = ev.e.lane; for (let i = 0; i < ev.pts.length - 1; i++) { const a = this.pos3(L, ev.pts[i].x, ev.pts[i].z, 1.3), b = this.pos3(L, ev.pts[i + 1].x, ev.pts[i + 1].z, 1.3); setTimeout(() => { fx.bolt(a, b, c, .22, .13); fx.impact(b.x, b.z, c, .3, 1.3); }, i * 80); } sfx.magic(); break; }
+        case 'shield': { const p = this.pos3(ev.t.lane, ev.t.x, ev.t.z, .3), c = ev.color ?? FXCOL[ev.fx] ?? 0xffe08a; fx.ring(p.x, p.z, 1.5, c, { dur: .6 }); fx.burst(p.x, 1, p.z, { n: 12, color: c, speed: 1.5, up: 2, life: .6, size: .5, g: 0 }); sfx.heal(); break; }
+        case 'pull': { const c = ev.color ?? FXCOL[ev.fx] ?? 0xffd24a, a = this.pos3(ev.e.lane, ev.x0, ev.z0, 1.2), b = this.pos3(ev.e.lane, ev.e.x, ev.e.z, 1.2); fx.bolt(b, a, c, .35, .1); fx.ring(a.x, a.z, 1.2, c); sfx.magic(); break; }
+        case 'summon': { const s2 = ev.s, p = this.pos3(s2.lane, s2.x, s2.z, .3), c = ev.color ?? FXCOL[ev.fx] ?? 0xffa040; fx.ring(p.x, p.z, 1.8, c, { dur: .7 }); fx.burst(p.x, .5, p.z, { n: 22, color: c, speed: 3, up: 5, life: .8, size: .7 }); sfx.boom(); break; }
+        case 'stealth': { const p = this.pos3(ev.e.lane, ev.e.x, ev.e.z, 1), c = ev.color ?? FXCOL[ev.fx] ?? 0x8a4aff; fx.burst(p.x, 1, p.z, { n: 20, color: c, speed: 2, up: 2, life: .6, size: .7, g: 0 }); break; }
+        case 'undying': case 'reborn': { const p = this.pos3(ev.e.lane, ev.e.x, ev.e.z, .3), c = ev.type === 'reborn' ? 0x9fe4ff : 0xff3a2a; fx.ring(p.x, p.z, 2, c, { dur: .9 }); fx.burst(p.x, 1, p.z, { n: 26, color: c, speed: 2, up: 5, life: 1, size: .7 }); if (ev.e.lane === this.cam.view) fx.text(p.x, 3, p.z, ev.type === 'reborn' ? '¡RENACE!' : '¡INMORTAL!', 'skill'); sfx.magic(); break; }
+        case 'spell': { if (ev.side === this.me) { this.ui.log(`Hechizo de invocador: ${SPELL_BY[ev.id].name}`); if (ev.e) { const p = this.pos3(ev.e.lane, ev.e.x, ev.e.z, .3); fx.ring(p.x, p.z, 2.2, SPELL_BY[ev.id].color, { dur: 1 }); fx.burst(p.x, .5, p.z, { n: 30, color: SPELL_BY[ev.id].color, speed: 3, up: 6, life: 1, size: .6 }); } sfx.magic(); } break; }
+        case 'spellOffer': { if (ev.side === this.me) { this.ui.log('¡Elige un hechizo de invocador!'); this.ui.refresh(); } break; }
+        case 'piggy': { if (ev.side === this.me) this.ui.log(`¡Hucha rota! +${ev.v} de oro`); break; }
+        case 'roll': { if (ev.side === this.me) { this.ui.rebuildShop(); this.ui.log('Nueva tirada de campeones'); } break; }
         case 'cast': { const e = ev.e, p = this.pos3(e.lane, e.x, e.z, 0); if (!['heal'].includes(ev.a.type)) fx.ring(p.x, p.z, 1.3, FXCOL[ev.a.fx] ?? 0xffffff, { dur: .4, op: .6 });  break; }
         case 'nexusShot': { const nx = this.pos3(ev.side, 0, LANE.nexusZ, 6.5), t = this.pos3(ev.side, ev.t.x, ev.t.z, 1.5); fx.bolt(nx, t, this.sim.P(ev.side).team ? 0xff7a5a : 0x7ad0ff, .22, .22); sfx.nexus(); break; }
         case 'place': { const e = ev.e, p = this.pos3(e.lane, e.x, e.z, .3); fx.ring(p.x, p.z, 1.6, 0xffe08a); fx.burst(p.x, .4, p.z, { n: 18, color: 0xffe08a, speed: 3, up: 4, life: .7, size: .6 }); const v = this.views.get(e.id); if (v) v.appear = 0; break; }
         case 'sell': { const e = ev.e, p = this.pos3(e.lane, e.x, e.z, 1); fx.burst(p.x, 1, p.z, { n: 14, color: 0xffd060, speed: 3, up: 4, life: .7, size: .5 }); fx.text(p.x, 2.5, p.z, '+' + (ev.v ?? e.def.cost), 'gold'); break; }
-        case 'upgrade': { const e = ev.e, p = this.pos3(e.lane, e.x, e.z, .3); fx.ring(p.x, p.z, 2.4, 0xffd060); fx.ring(p.x, p.z, 1.4, 0xffffff, { dur: .8 }); fx.burst(p.x, .5, p.z, { n: 40, colors: [0xffd060, 0xffffff, 0xffa030], speed: 4, up: 7, life: 1, size: .7 }); if (e.lane === this.me) { this.ui.log(`¡${UPGRADES[e.def.id]}!`); sfx.magic(); } break; }
+        case 'upgrade': { const e = ev.e, p = this.pos3(e.lane, e.x, e.z, .3); fx.ring(p.x, p.z, 2.4, 0xffd060); fx.ring(p.x, p.z, 1.4, 0xffffff, { dur: .8 }); fx.burst(p.x, .5, p.z, { n: 40, colors: [0xffd060, 0xffffff, 0xffa030], speed: 4, up: 7, life: 1, size: .7 }); if (e.lane === this.me) { this.ui.log(`¡${e.upDef ? e.upDef.name : 'Mejorado'}!`); sfx.magic(); } break; }
         case 'nexusUp': { if (this.sim.P(ev.side).team === this.sim.P(this.me).team) { this.ui.log(`Nexo mejorado: ${ {hp:'Vida', atk:'Ataque', regen:'Regeneración'}[ev.kind] } nv.${ev.lvl}`); sfx.magic(); } break; }
         case 'merc': { if (ev.side !== this.me && this.sim.target(ev.side) === this.me) this.ui.log(`⚠ ${this.sim.P(ev.side).name} te envía: ${ev.m.name}`); break; }
         case 'revive': { const e = ev.e, p = this.pos3(e.lane, e.x, e.z, .3); fx.ring(p.x, p.z, 1.4, 0xffffff, { dur: .8 }); const v = this.views.get(e.id); if (v) { v.group.visible = true; v.appear = 0; } break; }
@@ -176,13 +209,14 @@ export class Game {
     addEventListener('keydown', e => { if (!this.started || e.target.tagName === 'INPUT') return; this.keys[e.code] = true; if (e.repeat) return;
       if (e.code === 'Space') { e.preventDefault(); this.toggleReady(); }
       if (e.code === 'Tab') { e.preventDefault(); this.setView((this.cam.view + (e.shiftKey ? this.sim.n - 1 : 1)) % this.sim.n); }
-      if (e.code === 'Escape') { this.select(null); this.selEnt = null; this.ui.refresh(); }
+      if (e.code === 'Escape') { this.spellPick = null; this.select(null); this.selEnt = null; this.ui.refresh(); }
       if (e.code === 'KeyP' && this.local) this.paused = !this.paused;
       if (e.code === 'KeyF' && this.local) { this.speed = this.speed === 1 ? 2 : this.speed === 2 ? 3 : 1; this.ui.refresh(); }
       if (e.code === 'KeyX' && this.selEnt) this.sellEnt(this.selEnt);
-      if (e.code === 'KeyU' && this.selEnt) this.upgradeEnt(this.selEnt);
+      if (e.code === 'KeyU' && this.selEnt) this.upgradeEnt(this.selEnt, 0);
+      if (e.code === 'KeyI' && this.selEnt) this.upgradeEnt(this.selEnt, 1);
       if (e.code === 'KeyC') this.setView(this.me);
-      const km = 'Digit1 Digit2 Digit3 Digit4 Digit5 Digit6 Digit7 Digit8 Digit9 Digit0 Minus Equal'.split(' '); const i = km.indexOf(e.code); if (i >= 0 && FIGHTERS[i]) this.select(FIGHTERS[i].id);
+      const km = 'Digit1 Digit2 Digit3 Digit4 Digit5 Digit6 Digit7 Digit8 Digit9 Digit0 Minus Equal'.split(' '); const i = km.indexOf(e.code); const roll = this.sim.P(this.me).roll; if (i >= 0 && roll[i]) this.select(roll[i]);
       if (e.code === 'KeyB') this.buyWorker();
     });
     addEventListener('keyup', e => this.keys[e.code] = false);
@@ -196,13 +230,17 @@ export class Game {
   select(id) { this.sel = id === this.sel ? null : id; this.selEnt = null; sfx.click(); this.updateGhost(); this.ui.refresh(); }
   setView(v) { this.cam.view = v; this.cam.tx = laneX(v); this.cam.tz = 12; if (this.selEnt && this.selEnt.lane !== v) this.selEnt = null; this.updateGhost(); this.ui.refresh(); }
   toggleReady() { const p = this.sim.P(this.me); if (this.sim.phase !== 'build') return; this.sim.setReady(this.me, !p.ready); sfx.click(); this.ui.refresh(); }
+  reroll() { if (this.sim.reroll(this.me)) { sfx.place(); this.ui.rebuildShop(); } else sfx.deny(); this.ui.refresh(); }
+  breakPiggy() { if (this.sim.breakPiggy(this.me)) sfx.place(); this.ui.refresh(); }
+  chooseSpell(id, en) { const c = en ? en.cell : [0, 0]; if (this.sim.chooseSpell(this.me, id, c[0], c[1])) { sfx.place(); this.spellPick = null; } else sfx.deny(); this.ui.refresh(); }
   buyWorker() { if (this.sim.buyWorker(this.me)) sfx.place(); else sfx.deny(); this.ui.refresh(); }
   buyMerc(id) { if (this.sim.buyMerc(this.me, id)) { sfx.place(); const m = MBY[id]; this.ui.log(`Enviado a ${this.sim.P(this.sim.target(this.me)).name}: ${m.name} (+${m.inc} ingresos)`); } else sfx.deny(); this.ui.refresh(); }
-  upgradeEnt(en) { if (!en || en.lane !== this.me) return; const [c, r] = en.cell; if (this.sim.upgrade(this.me, c, r)) { sfx.place(); this.ui.refresh(); } else sfx.deny(); }
+  upgradeEnt(en, idx = 0) { if (!en || en.lane !== this.me) return; const [c, r] = en.cell; if (this.sim.upgrade(this.me, c, r, idx)) { sfx.place(); this.ui.refresh(); } else sfx.deny(); }
   upgradeNexus(k) { if (this.sim.upgradeNexus(this.me, k)) sfx.place(); else sfx.deny(); this.ui.refresh(); }
   sellEnt(en) { if (!en || en.lane !== this.me) return; const [c, r] = en.cell; if (this.sim.sell(this.me, c, r)) { sfx.sell(); if (this.selEnt === en) this.selEnt = null; this.ui.refresh(); } }
   clickGrid() {
     if (!this.hover) return; const [c, r] = this.hover; const sim = this.sim, ex = sim.P(this.cam.view).grid[r * GRID.cols + c];
+    if (ex && this.spellPick && this.cam.view === this.me) { this.chooseSpell(this.spellPick, ex); return; }
     if (ex) { this.selEnt = this.selEnt === ex ? null : ex; this.sel = null; this.updateGhost(); sfx.click(); this.ui.refresh(); return; }
     if (this.cam.view !== this.me) return;
     if (this.sel && sim.phase === 'build') { const e = sim.place(this.me, this.sel, c, r); if (e) sfx.place(); else sfx.deny(); this.ui.refresh(); }

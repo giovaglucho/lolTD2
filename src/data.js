@@ -67,25 +67,25 @@ export const FIGHTERS = [
 // monstruos de la grieta (oleadas) + mercenarios
 // k = modelo, s = escala del modelo
 export const CREEPS = {
-  melee:   { name:'Súbdito Cuerpo a Cuerpo', k:'minion', hp:110, dmg:11, aspd:1, range:1.6, speed:3.2, armor:0, melee:true, s:1, bounty:3 },
-  caster:  { name:'Súbdito Mago', k:'minion_c', hp:80, dmg:14, aspd:.9, range:5.5, speed:3.1, armor:0, melee:false, s:1, bounty:3, proj:{color:0xc59bff,speed:14,size:.14} },
-  gromp:   { name:'Gromp', k:'gromp', hp:260, dmg:18, aspd:.8, range:2, speed:2.6, armor:5, melee:true, s:1.15, bounty:5, ability:{type:'poison',cd:5,dps:10,t:4,fx:'poison'} },
-  wolf:    { name:'Lobo Sombrío', k:'wolf', hp:95, dmg:15, aspd:1.3, range:1.7, speed:5.2, armor:0, melee:true, s:1, bounty:3 },
-  raptor:  { name:'Raptor', k:'raptor', hp:90, dmg:16, aspd:1.2, range:2.6, speed:5, armor:0, melee:true, s:1, bounty:3 },
-  krug:    { name:'Krug', k:'krug', hp:420, dmg:24, aspd:.7, range:2, speed:2.2, armor:14, melee:true, s:1.25, bounty:6 },
-  cannon:  { name:'Súbdito de Asedio', k:'cannon', hp:240, dmg:34, aspd:.55, range:6.5, speed:2.6, armor:8, melee:false, s:1.2, bounty:6, proj:{color:0xff8a3d,speed:12,size:.25} },
-  blue:    { name:'Centinela Azul', k:'buff_blue', hp:620, dmg:30, aspd:.8, range:2.2, speed:2.8, armor:14, melee:true, s:1.5, bounty:9, ability:{type:'nova',cd:6,dmg:45,r:3,stun:.8,self:true,fx:'frost'} },
-  red:     { name:'Brambleback Rojo', k:'buff_red', hp:640, dmg:34, aspd:.8, range:2.2, speed:2.8, armor:14, melee:true, s:1.5, bounty:9, ability:{type:'poison',cd:4,dps:18,t:4,fx:'fire'} },
-  herald:  { name:'Heraldo de la Grieta', k:'herald', hp:2600, dmg:70, aspd:.6, range:2.6, speed:2.8, armor:25, melee:true, s:2.1, bounty:40, boss:true, ability:{type:'nova',cd:6,dmg:90,r:3.6,stun:1.2,self:true,fx:'void'} },
-  voidling:{ name:'Larva del Vacío', k:'grub', hp:140, dmg:14, aspd:1, range:1.5, speed:3.4, armor:0, melee:true, s:.9, bounty:2 },
-  super:   { name:'Súbdito Superior', k:'super', hp:900, dmg:48, aspd:.8, range:2, speed:3, armor:30, melee:true, s:1.6, bounty:10 },
-  cloud:   { name:'Dragón de las Nubes', k:'drake_c', hp:1500, dmg:70, aspd:.65, range:7, speed:3, armor:18, melee:false, s:1.9, bounty:22, proj:{color:0xbfe9ff,speed:16,size:.3}, ability:{type:'nova',cd:6,dmg:80,r:3,fx:'frost'} },
-  inferno: { name:'Dragón Infernal', k:'drake_i', hp:1700, dmg:80, aspd:.65, range:7, speed:3, armor:18, melee:false, s:1.9, bounty:24, proj:{color:0xff5a1f,speed:16,size:.32}, ability:{type:'nova',cd:5.5,dmg:100,r:3.2,fx:'fire'} },
-  mountain:{ name:'Dragón de la Montaña', k:'drake_m', hp:2600, dmg:75, aspd:.55, range:6, speed:2.6, armor:40, melee:false, s:2, bounty:26, proj:{color:0xc9a26a,speed:14,size:.32}, ability:{type:'nova',cd:6,dmg:90,r:3.2,stun:1,fx:'quake'} },
-  ocean:   { name:'Dragón del Océano', k:'drake_o', hp:2000, dmg:65, aspd:.7, range:7, speed:3, armor:20, melee:false, s:1.9, bounty:24, proj:{color:0x4fb8ff,speed:16,size:.3}, ability:{type:'heal',heal:220,range:8,cd:4,fx:'heal'} },
-  hunter:  { name:'Acechador del Vacío', k:'voidhunter', hp:1100, dmg:85, aspd:.9, range:2.2, speed:4.3, armor:15, melee:true, s:1.5, bounty:14 },
-  elder:   { name:'Dragón Ancestral', k:'elder', hp:6200, dmg:120, aspd:.6, range:7.5, speed:2.8, armor:50, melee:false, s:2.8, bounty:80, boss:true, proj:{color:0xc77bff,speed:18,size:.45}, ability:{type:'nova',cd:5,dmg:170,r:4,stun:1,fx:'void'} },
-  baron:   { name:'Barón Nashor', k:'baron', hp:13000, dmg:170, aspd:.55, range:7.5, speed:2.4, armor:60, melee:false, s:3.4, bounty:150, boss:true, proj:{color:0xa14dff,speed:15,size:.5}, ability:{type:'nova',cd:4.5,dmg:230,r:4.6,stun:1.1,fx:'void'} },
+  melee:   { dmgType:'asedio', armorType:'fortificada', desc:'Soldado básico de la Grieta. Avanza en grupo hacia el Nexo.', name:'Súbdito Cuerpo a Cuerpo', k:'minion', hp:110, dmg:11, aspd:1, range:1.6, speed:3.2, armor:0, melee:true, s:1, bounty:3 },
+  caster:  { dmgType:'magico', armorType:'arcana', desc:'Lanza proyectiles mágicos desde la retaguardia.', name:'Súbdito Mago', k:'minion_c', hp:80, dmg:14, aspd:.9, range:5.5, speed:3.1, armor:0, melee:false, s:1, bounty:3, proj:{color:0xc59bff,speed:14,size:.14} },
+  gromp:   { dmgType:'magico', armorType:'natural', desc:'Sapo gigante del río; su piel supura veneno.', name:'Gromp', k:'gromp', hp:260, dmg:18, aspd:.8, range:2, speed:2.6, armor:5, melee:true, s:1.15, bounty:5, ability:{type:'poison',cd:5,dps:10,t:4,fx:'poison'} },
+  wolf:    { dmgType:'perforante', armorType:'ligera', desc:'Manada rápida que cae en tropel sobre la primera línea.', name:'Lobo Sombrío', k:'wolf', hp:95, dmg:15, aspd:1.3, range:1.7, speed:5.2, armor:0, melee:true, s:1, bounty:3 },
+  raptor:  { dmgType:'perforante', armorType:'ligera', desc:'Aves carnívoras veloces que atacan desde corta distancia.', name:'Raptor', k:'raptor', hp:90, dmg:16, aspd:1.2, range:2.6, speed:5, armor:0, melee:true, s:1, bounty:3 },
+  krug:    { dmgType:'asedio', armorType:'fortificada', desc:'Gólem de roca lento y durísimo.', name:'Krug', k:'krug', hp:420, dmg:24, aspd:.7, range:2, speed:2.2, armor:14, melee:true, s:1.25, bounty:6 },
+  cannon:  { dmgType:'asedio', armorType:'fortificada', desc:'Artillería que castiga a los defensores desde lejos.', name:'Súbdito de Asedio', k:'cannon', hp:240, dmg:34, aspd:.55, range:6.5, speed:2.6, armor:8, melee:false, s:1.2, bounty:6, proj:{color:0xff8a3d,speed:12,size:.25} },
+  blue:    { dmgType:'magico', armorType:'arcana', desc:'Guardián del Sigilo de Lucidez; aturde con pulsos de energía.', name:'Centinela Azul', k:'buff_blue', hp:620, dmg:30, aspd:.8, range:2.2, speed:2.8, armor:14, melee:true, s:1.5, bounty:9, ability:{type:'nova',cd:6,dmg:45,r:3,stun:.8,self:true,fx:'frost'} },
+  red:     { dmgType:'asedio', armorType:'natural', desc:'Bestia del Sigilo de Fuego: sus golpes queman.', name:'Brambleback Rojo', k:'buff_red', hp:640, dmg:34, aspd:.8, range:2.2, speed:2.8, armor:14, melee:true, s:1.5, bounty:9, ability:{type:'poison',cd:4,dps:18,t:4,fx:'fire'} },
+  herald:  { dmgType:'magico', armorType:'inmaterial', desc:'Engendro del Vacío con un ojo que lo ve todo. Aturde en área.', name:'Heraldo de la Grieta', k:'herald', hp:2600, dmg:70, aspd:.6, range:2.6, speed:2.8, armor:25, melee:true, s:2.1, bounty:40, boss:true, ability:{type:'nova',cd:6,dmg:90,r:3.6,stun:1.2,self:true,fx:'void'} },
+  voidling:{ dmgType:'magico', armorType:'inmaterial', desc:'Larvas del Vacío que llegan en enjambre.', name:'Larva del Vacío', k:'grub', hp:140, dmg:14, aspd:1, range:1.5, speed:3.4, armor:0, melee:true, s:.9, bounty:2 },
+  super:   { dmgType:'asedio', armorType:'fortificada', desc:'Súbdito acorazado imparable.', name:'Súbdito Superior', k:'super', hp:900, dmg:48, aspd:.8, range:2, speed:3, armor:30, melee:true, s:1.6, bounty:10 },
+  cloud:   { dmgType:'magico', armorType:'ligera', desc:'Dragón del viento: ralentiza con sus ráfagas.', name:'Dragón de las Nubes', k:'drake_c', hp:1500, dmg:70, aspd:.65, range:7, speed:3, armor:18, melee:false, s:1.9, bounty:22, proj:{color:0xbfe9ff,speed:16,size:.3}, ability:{type:'nova',cd:6,dmg:80,r:3,fx:'frost'} },
+  inferno: { dmgType:'magico', armorType:'natural', desc:'Dragón de fuego que arrasa áreas enteras.', name:'Dragón Infernal', k:'drake_i', hp:1700, dmg:80, aspd:.65, range:7, speed:3, armor:18, melee:false, s:1.9, bounty:24, proj:{color:0xff5a1f,speed:16,size:.32}, ability:{type:'nova',cd:5.5,dmg:100,r:3.2,fx:'fire'} },
+  mountain:{ dmgType:'asedio', armorType:'fortificada', desc:'Dragón de piedra con escamas impenetrables.', name:'Dragón de la Montaña', k:'drake_m', hp:2600, dmg:75, aspd:.55, range:6, speed:2.6, armor:40, melee:false, s:2, bounty:26, proj:{color:0xc9a26a,speed:14,size:.32}, ability:{type:'nova',cd:6,dmg:90,r:3.2,stun:1,fx:'quake'} },
+  ocean:   { dmgType:'magico', armorType:'arcana', desc:'Dragón de agua que cura a sus aliados.', name:'Dragón del Océano', k:'drake_o', hp:2000, dmg:65, aspd:.7, range:7, speed:3, armor:20, melee:false, s:1.9, bounty:24, proj:{color:0x4fb8ff,speed:16,size:.3}, ability:{type:'heal',heal:220,range:8,cd:4,fx:'heal'} },
+  hunter:  { dmgType:'perforante', armorType:'inmaterial', desc:'Depredador del Vacío veloz y letal.', name:'Acechador del Vacío', k:'voidhunter', hp:1100, dmg:85, aspd:.9, range:2.2, speed:4.3, armor:15, melee:true, s:1.5, bounty:14 },
+  elder:   { dmgType:'puro', armorType:'arcana', desc:'El dragón más antiguo; ejecuta a sus presas.', name:'Dragón Ancestral', k:'elder', hp:6200, dmg:120, aspd:.6, range:7.5, speed:2.8, armor:50, melee:false, s:2.8, bounty:80, boss:true, proj:{color:0xc77bff,speed:18,size:.45}, ability:{type:'nova',cd:5,dmg:170,r:4,stun:1,fx:'void'} },
+  baron:   { dmgType:'magico', armorType:'inmaterial', desc:'La criatura más temible de la Grieta.', name:'Barón Nashor', k:'baron', hp:13000, dmg:170, aspd:.55, range:7.5, speed:2.4, armor:60, melee:false, s:3.4, bounty:150, boss:true, proj:{color:0xa14dff,speed:15,size:.5}, ability:{type:'nova',cd:4.5,dmg:230,r:4.6,stun:1.1,fx:'void'} },
 };
 
 // oleadas: [{c: criatura, n: cantidad}] — escala = 1.19^(w-1)
@@ -122,8 +122,8 @@ export const MERCS = [
   { id:'cho',     name:"Cho'Gath", cost:420, inc:48, n:1, c:'chogath', desc:'El terror del Vacío.' },
   { id:'elder',   name:'Dragón Ancestral', cost:700, inc:80, n:1, c:'elder', desc:'La amenaza definitiva.' },
 ];
-CREEPS.scuttle = { name:'Cangrejo Escurridizo', k:'scuttle', hp:120, dmg:9, aspd:1.1, range:1.5, speed:5.4, armor:4, melee:true, s:.9, bounty:0 };
-CREEPS.chogath = { name:"Cho'Gath", k:'chogath', hp:3800, dmg:120, aspd:.65, range:2.6, speed:3, armor:30, melee:true, s:2.3, bounty:0, ability:{type:'nova',cd:6,dmg:140,r:3.8,stun:1.1,self:true,fx:'void'} };
+CREEPS.scuttle = { dmgType:'perforante', armorType:'natural', desc:'Cangrejo escurridizo del río.', name:'Cangrejo Escurridizo', k:'scuttle', hp:120, dmg:9, aspd:1.1, range:1.5, speed:5.4, armor:4, melee:true, s:.9, bounty:0 };
+CREEPS.chogath = { dmgType:'asedio', armorType:'inmaterial', desc:'El Terror del Vacío: devora todo a su paso.', name:"Cho'Gath", k:'chogath', hp:3800, dmg:120, aspd:.65, range:2.6, speed:3, armor:30, melee:true, s:2.3, bounty:0, ability:{type:'nova',cd:6,dmg:140,r:3.8,stun:1.1,self:true,fx:'void'} };
 
 export const waveScale = w => Math.pow(1.11, w - 1);
 export const mercScale = w => 1 + 0.12 * (w - 1);

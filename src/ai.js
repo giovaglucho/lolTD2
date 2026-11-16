@@ -1,7 +1,9 @@
 // IA de Rift Legion con 4 dificultades. Funciona igual en el navegador y en el servidor.
-import { FIGHTERS, GRID, MERCS, DIFFS } from './data.js';
+import { GRID, MERCS, DIFFS } from './data.js';
+import { FBY } from './sim.js';
+import { SPELL_BY } from './content/spells.js';
 
-const FRONT = new Set(['Tanque', 'Bruiser', 'Duelista']);
+const FRONT = new Set(['Tanque', 'Bruiser', 'Duelista', 'Luchador']);
 const isFront = f => FRONT.has(f.role);
 function freeSlots(sim, side, front) {
   const rows = front ? [0, 1, 2] : [3, 4, 5, 2, 1];
@@ -13,6 +15,8 @@ const pick = a => a[Math.floor(Math.random() * a.length)];
 // Se llama una vez al empezar cada fase de construcción.
 export function aiTurn(sim, side, diffKey = 'normal') {
   const D = DIFFS[diffKey] || DIFFS.normal, p = sim.P(side), w = sim.wave;
+  const FIGHTERS = p.roll.map(id => FBY[id]).filter(Boolean);
+  if (p.piggy && w >= 8) sim.breakPiggy(side);
   if (D.bonus) p.gold += D.bonus * (1 + w * .08); // "trampas" de las dificultades altas
   const budget = () => p.gold * D.spend - (p.gold * (1 - D.spend));
   // 1) trabajadores (economía) en las primeras oleadas
@@ -25,12 +29,12 @@ export function aiTurn(sim, side, diffKey = 'normal') {
     const army = p.grid.filter(Boolean), nFront = army.filter(e => isFront(e.def)).length;
     // mejorar unidades existentes
     if (D.upg && army.length >= 4 && Math.random() < D.upg) {
-      const cand = army.filter(e => !e.up && sim.upgradeCost(e) <= budget()).sort((a, b) => b.def.cost - a.def.cost)[0];
-      if (cand && sim.upgrade(side, cand.cell[0], cand.cell[1])) continue;
+      const cand = army.filter(e => !e.up && sim.upgradeCost(e, 0) <= budget()).sort((a, b) => b.def.cost - a.def.cost)[0];
+      if (cand && sim.upgrade(side, cand.cell[0], cand.cell[1], Math.floor(Math.random() * cand.def.upgrades.length))) continue;
     }
     if (sim.value(side) >= target && Math.random() < .7) break;
     const wantFront = nFront < army.length * .42 + 1;
-    let pool = FIGHTERS.filter(f => f.cost <= budget() && isFront(f) === wantFront);
+    let pool = FIGHTERS.filter(f => f.cost <= budget() && (isFront(f) === wantFront || f.role === 'Apoyo' && Math.random() < .2));
     if (!pool.length) pool = FIGHTERS.filter(f => f.cost <= budget());
     if (!pool.length) break;
     // las dificultades altas prefieren unidades caras y Soraka si hay muchos tanques
@@ -48,6 +52,7 @@ export function aiTurn(sim, side, diffKey = 'normal') {
   }
   // 4) mejoras del Nexo
   if (D.nex && Math.random() < D.nex) { const k = pick(['hp', 'atk', 'regen']); sim.upgradeNexus(side, k); }
+  if (p.spellOffer) sim.autoSpell(side);
   p.aiReadyAt = D.ready;
 }
 // Llamado cada frame: la IA marca "listo" tras unos segundos.

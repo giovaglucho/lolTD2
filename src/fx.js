@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
-export const FXCOL = { spin: 0x6fa8ff, frost: 0x9fe4ff, fire: 0xff7a2a, beam: 0xfff3b0, quake: 0xc9a77a, heal: 0x7dffb0, slash: 0xff4a4a, rocket: 0xffd24a, poison: 0x8aff5a, sun: 0xffe08a, wind: 0xcfefff, arcane: 0x4fd4ff, void: 0xc77bff };
+export const FXCOL = { spin: 0x6fa8ff, frost: 0x9fe4ff, fire: 0xff7a2a, beam: 0xfff3b0, quake: 0xc9a77a, heal: 0x7dffb0, slash: 0xff4a4a, rocket: 0xffd24a, poison: 0x8aff5a, sun: 0xffe08a, wind: 0xcfefff, arcane: 0x4fd4ff, void: 0xc77bff,
+  shadow: 0x8a4aff, blood: 0xff2a3a, holy: 0xfff0b0, lightning: 0x9fd8ff, nature: 0x7aef6a, water: 0x4fb8ff, star: 0xffe9a8 };
 
 export class FX {
   constructor(scene, tx, camera) {

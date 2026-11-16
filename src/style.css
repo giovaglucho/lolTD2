@@ -101,3 +101,17 @@ kbd { display:inline-block; font:600 10px monospace; padding:1px 5px; margin-lef
 @media (max-width:900px) { .modes { grid-template-columns:1fr; } }
 .mc .cost { white-space:nowrap; min-width:46px; text-align:right; }
 @media (max-height:860px) { #left:has(#info:not(.hidden)) #next { display:none; } #left { top:262px; } #log { bottom:140px; } }
+.ft.crit { color:#ff5a3a; font-size:22px; font-style:italic; }
+/* v3: HUD por legión */
+.uc .tier { position:absolute; top:4px; right:4px; font:700 9px Arial; padding:0 3px; border-radius:2px; background:#000a; color:#c8aa6e; }
+.uc.t5 .tier, .uc.t6 .tier { color:#ffd25a; } .uc .role { display:none; }
+.uc .types { position:absolute; bottom:22px; left:4px; font-size:11px; text-shadow:0 0 3px #000,0 0 3px #000; display:flex; gap:3px; }
+.shopx { display:flex; flex-direction:column; justify-content:center; gap:4px; padding:0 4px; min-width:90px; } .shopx .lgn { font:700 12px Georgia,serif; color:#c8aa6e; text-align:center; letter-spacing:1px; text-transform:uppercase; }
+.shopx button { padding:4px 6px; font-size:11px; background:#122440; color:#fff; border:1px solid #5c4a24; }
+#tip .tierb { color:#c8aa6e; font-size:12px; } #tip .ab.up { border-top:1px dashed #4a3e22; } #tip .quote { font:italic 12px Georgia,serif; color:#9fb4d0; margin-top:6px; } #tip { width:380px; bottom:172px; }
+.ab i { color:#c8aa6e; font-style:normal; font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-right:4px; }
+#info .btns { flex-wrap:wrap; } #info .btns button.up { font-size:11px; }
+#spellModal { position:absolute; top:150px; left:50%; transform:translateX(-50%); width:720px; padding:14px 18px; background:linear-gradient(180deg,#10203c,#070f20); border:2px solid #c8aa6e; box-shadow:0 10px 40px #000c; z-index:30; text-align:center; }
+#spellModal h3 { margin:0; font:700 20px Georgia,serif; color:#c8aa6e; letter-spacing:3px; text-transform:uppercase; } #spellModal > p { font-size:13px; color:#cfe0f5; }
+#spellModal .sp { display:flex; gap:12px; } .spc { flex:1; padding:10px; background:#0a1426; border:1px solid #4a3e22; cursor:pointer; transition:transform .15s; } .spc:hover, .spc.on { border-color:#c8aa6e; transform:translateY(-4px); background:#122440; }
+.spc .ic { font-size:34px; } .spc b { display:block; font:700 15px Georgia,serif; color:#fff; } .spc small { color:#8fa6c4; font-size:10px; text-transform:uppercase; letter-spacing:1px; } .spc p { font-size:12px; color:#cfe0f5; margin:6px 0 0; }
