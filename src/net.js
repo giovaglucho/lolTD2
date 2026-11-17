@@ -3,9 +3,9 @@ import { Sim, FBY, MBY } from './sim.js';
 import { CREEPS, GRID, CFG } from './data.js';
 
 // Destino del servidor multijugador:
-//  · PartyKit (Vercel): host "algo.usuario.partykit.dev" (VITE_PARTYKIT_HOST o Ajustes) → /party/global (lobby) y /parties/match/<id>
+//  · Cloudflare (PartyServer), para Vercel: host "rift-legion.<subdominio>.workers.dev" (VITE_SERVER_HOST o Ajustes) → /parties/lobby/global y /parties/match/<id>
 //  · servidor propio Node (`npm start`): mismo origen, ruta /ws
-export const PARTYKIT_HOST = (import.meta.env && import.meta.env.VITE_PARTYKIT_HOST) || '';
+export const PARTYKIT_HOST = (import.meta.env && (import.meta.env.VITE_SERVER_HOST || import.meta.env.VITE_PARTYKIT_HOST)) || '';
 export function serverTarget(setting) {
   const h = (setting || PARTYKIT_HOST || '').trim().replace(/^(wss?|https?):\/\//, '').replace(/\/.*$/, '');
   return h ? { kind: 'partykit', host: h, scheme: /^(localhost|127\.|192\.|10\.)/.test(h) ? 'ws' : 'wss' } : { kind: 'node' };
@@ -14,7 +14,7 @@ export class Conn {
   constructor(target = { kind: 'node' }, path = '') { this.target = target; this.path = path; this.ws = null; this.handlers = {}; this.open = false; }
   url() {
     const t = this.target;
-    if (t.kind === 'partykit') return `${t.scheme}://${t.host}${this.path || '/party/global'}`;
+    if (t.kind === 'partykit') return `${t.scheme}://${t.host}${this.path || '/parties/lobby/global'}`;
     const q = new URLSearchParams(location.search).get('server'); if (q) return q;
     return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
   }

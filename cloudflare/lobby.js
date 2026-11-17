@@ -1,20 +1,23 @@
-// Sala "lobby" de PartyKit (una sola: /party/global): cola de emparejamiento, perfiles, MMR Elo y clasificación.
+// Servidor de emparejamiento (PartyServer / Durable Object "Lobby", sala "global").
+// Cola Clásico/Ranked, perfiles, MMR Elo y clasificación. Ruta: /parties/lobby/global
+import { Server, getServerByName } from 'partyserver';
+
 const TIERS = [[900, 'Hierro'], [1050, 'Bronce'], [1200, 'Plata'], [1350, 'Oro'], [1500, 'Platino'], [1650, 'Esmeralda'], [1800, 'Diamante'], [1950, 'Maestro'], [2100, 'Gran Maestro'], [1e9, 'Retador']];
 const tierOf = m => TIERS.find(([lim]) => m < lim)[1];
 const FILL_MS = 15000;
 const clean = n => String(n || '').replace(/[^\p{L}\p{N} _-]/gu, '').slice(0, 16) || 'Invocador' + Math.floor(Math.random() * 999);
 const BOTS = ['Poro', 'Teemo', 'Rammus', 'Blitz'];
 
-export default class Lobby {
-  constructor(room) { this.room = room; this.ratings = {}; this.queues = { classic: [], ranked: [] }; this.users = new Map(); }
+export class Lobby extends Server {
+  ratings = {}; queues = { classic: [], ranked: [] }; users = new Map();
   async onStart() {
-    this.ratings = (await this.room.storage.get('ratings')) || {};
+    this.ratings = (await this.ctx.storage.get('ratings')) || {};
     this.timer = setInterval(() => this.tick(), 1000);
   }
-  save() { return this.room.storage.put('ratings', this.ratings); }
+  save() { return this.ctx.storage.put('ratings', this.ratings); }
   prof(name) { const k = name.toLowerCase(); const r = (this.ratings[k] ||= { name, mmr: 1000, w: 0, l: 0, cw: 0, cl: 0 }); return { ...r, tier: tierOf(r.mmr) }; }
   send(conn, o) { try { conn.send(JSON.stringify(o)); } catch {} }
-  onMessage(raw, conn) {
+  onMessage(conn, raw) {
     let d; try { d = JSON.parse(raw); } catch { return; }
     if (d.t === 'hello') { const name = clean(d.name); this.users.set(conn.id, { conn, name, legion: 'random' }); this.send(conn, { t: 'profile', p: this.prof(name) }); this.save(); return; }
     const u = this.users.get(conn.id); if (!u) return;
@@ -40,11 +43,11 @@ export default class Lobby {
     const order = hs.length === 4 ? [hs[0], hs[3], hs[1], hs[2]] : hs; // equilibrar equipos: mejor + peor
     const slots = [0, 1, 2, 3].map(i => order[i] ? { name: order[i].u.name, bot: false, legion: order[i].u.legion, mmr: order[i].mmr, tier: tierOf(order[i].mmr) } : { name: 'Bot ' + BOTS[i], bot: true, legion: 'random', diff: 'normal' });
     const id = Math.random().toString(36).slice(2, 10);
-    const room = this.room.context.parties.match.get(id);
-    await room.fetch({ method: 'POST', body: JSON.stringify({ mode, ranked, slots }) });
+    const room = await getServerByName(this.env.Match, id);
+    await room.fetch(new Request('https://match.internal/init', { method: 'POST', body: JSON.stringify({ mode, ranked, slots }) }));
     for (const o of order) this.send(o.u.conn, { t: 'found', id, mode, ranked });
   }
-  // el match avisa del resultado → Elo
+  // la partida avisa del resultado → Elo
   async onRequest(req) {
     if (req.method !== 'POST') return new Response('ok');
     const { ranked, winner, players } = await req.json(); const delta = {};

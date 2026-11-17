@@ -1,10 +1,10 @@
-// Prueba de extremo a extremo contra PartyKit (dev o desplegado): HOST=127.0.0.1:1999 node tools/pktest.mjs ranked
+// Prueba de extremo a extremo contra Cloudflare/PartyServer (dev o desplegado): HOST=127.0.0.1:1999 node tools/pktest.mjs ranked
 import WebSocket from 'ws';
 const HOST = process.env.HOST || '127.0.0.1:1999', S = /^127|localhost/.test(HOST) ? 'ws' : 'wss', mode = process.argv[2] || 'ranked';
 const names = ['Faker', 'Caps', 'Uzi', 'Rekkles'], legs = ['demacia', 'jonia', 'noxus', 'invocador'];
 const out = []; let snaps = 0;
 const one = (name, legion, i) => new Promise(res => {
-  const lob = new WebSocket(`${S}://${HOST}/party/global`);
+  const lob = new WebSocket(`${S}://${HOST}/parties/lobby/global`);
   lob.on('open', () => { lob.send(JSON.stringify({ t: 'hello', name })); lob.send(JSON.stringify({ t: 'queue', mode, legion })); });
   lob.on('message', raw => { const d = JSON.parse(raw);
     if (d.t === 'found') { console.log(name, 'partida', d.id);

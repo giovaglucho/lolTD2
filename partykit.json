@@ -1,7 +1,0 @@
-{
-  "$schema": "https://www.partykit.io/schema.json",
-  "name": "rift-legion",
-  "main": "party/lobby.js",
-  "parties": { "match": "party/match.js" },
-  "compatibilityDate": "2024-11-01"
-}

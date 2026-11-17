@@ -1,4 +1,4 @@
-// Un navegador real en cola Clásico contra PartyKit local (rellena con bots) → partida → fin.
+// Un navegador real en cola Clásico contra Cloudflare/PartyServer local (rellena con bots) → partida → fin.
 import { chromium } from 'file:///opt/node22/lib/node_modules/playwright/index.mjs';
 const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const p = await b.newPage({ viewport: { width: 1600, height: 900 } }); const errs = [];

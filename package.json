@@ -11,16 +11,16 @@
     "sim": "node tools/sim.mjs",
     "server": "node server/server.js",
     "start": "vite build && node server/server.js",
-    "party:dev": "partykit dev --port 1999",
-    "party:deploy": "partykit deploy"
+    "cf:dev": "wrangler dev --port 1999",
+    "cf:deploy": "wrangler deploy"
   },
   "dependencies": {
+    "partyserver": "^0.5.10",
     "three": "^0.187.0",
     "vite": "^8.0.0",
     "ws": "^8.23.0"
   },
   "devDependencies": {
-    "partykit": "^0.0.115",
-    "partysocket": "^1.3.0"
+    "wrangler": "^4.163.0"
   }
 }

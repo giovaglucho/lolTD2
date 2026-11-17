@@ -53,7 +53,7 @@ function startOnline(mode, legion) {
   }
   // PartyKit: lobby (cola) + sala de partida
   conn ??= (() => {
-    const c = new Conn(target, '/party/global');
+    const c = new Conn(target, '/parties/lobby/global');
     c.on('profile', d => { const p = store.getProfile(); if (d.p && d.p.mmr) { p.mmr = d.p.mmr; store.saveProfile(p); } });
     c.on('queue', d => setQueueStatus(`En cola ${d.mode === 'ranked' ? 'clasificatoria' : 'clásica'}: <b>${d.n}/4</b> jugadores · ${d.wait}s${d.fill != null ? ` · bots en ${d.fill}s` : ''}`));
     c.on('found', d => { setQueueStatus('¡Partida encontrada!'); const m = new Conn(target, `/parties/match/${d.id}?name=${encodeURIComponent(name)}`); wireMatch(m); matchConn = m; m.connect().catch(() => { toastErr('No se pudo entrar a la partida.'); }); });
