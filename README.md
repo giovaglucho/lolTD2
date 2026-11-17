@@ -39,3 +39,15 @@ Controles: clic colocar/seleccionar · U mejorar · X / clic der. vender · 1-9,
 - `src/models.js` modelos procedurales, `src/world.js` escenario, `src/fx.js` efectos, `src/game.js` render/entrada, `src/ui.js` HUD y menús.
 
 Limitaciones del MVP: identidad por nombre (sin cuentas), un único servidor en memoria, sin reconexión a la misma partida, una sola "legión" de campeones (sin elegir facción).
+
+## Multijugador en línea con PartyKit (para Vercel)
+Vercel solo sirve la web; el 2v2 en línea corre en **PartyKit** (`party/lobby.js` = cola, perfiles y MMR; `party/match.js` = una partida autoritativa con la misma simulación `src/sim.js`).
+
+```bash
+npm run party:dev                       # servidor local en 127.0.0.1:1999
+# en otra terminal: npm run dev, y en Ajustes → "URL de servidor propio" escribe 127.0.0.1:1999
+npx partykit login && npm run party:deploy   # publica → te da  rift-legion.<usuario>.partykit.dev
+VITE_PARTYKIT_HOST=rift-legion.<usuario>.partykit.dev npm run build   # la web ya apunta a ese servidor
+HOST=rift-legion.<usuario>.partykit.dev node tools/pktest.mjs ranked   # prueba con 4 clientes simulados
+```
+Sin `VITE_PARTYKIT_HOST` el menú muestra "Servidores próximamente" (o usa la URL de Ajustes / `npm start`).

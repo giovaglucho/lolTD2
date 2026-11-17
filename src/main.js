@@ -3,18 +3,19 @@ import { Game } from './game.js';
 import { UI } from './ui.js';
 import { getPortrait } from './portraits.js';
 import { initAudio, setMuted } from './sfx.js';
-import { Conn } from './net.js';
-import { mountMenu, showMenu, hideMenu, showLoading, showResult, store } from './menu/index.js';
+import { Conn, serverTarget, PARTYKIT_HOST } from './net.js';
+import { mountMenu, showMenu, hideMenu, showLoading, showResult, store, setQueueStatus } from './menu/index.js';
 import { LEGION_BY } from './content/index.js';
 
 const params = new URLSearchParams(location.search);
 const $ = id => document.getElementById(id);
 let game, ui, conn = null, online = false, lastMatch = null;
 
-// ¿hay servidor multijugador? (en Vercel no; con `npm start` sí, o con una URL propia en Ajustes)
+// ¿hay servidor multijugador? PartyKit (host configurado) o servidor Node propio (`npm start`, /health).
+let target = { kind: 'node' };
 async function probeServer() {
-  const s = store.getSettings();
-  if (s.serverUrl) { online = true; return; }
+  target = serverTarget(store.getSettings().serverUrl);
+  if (target.kind === 'partykit') { online = true; return; }
   try { const r = await fetch('/health', { cache: 'no-store' }); online = r.ok && (await r.text()).trim() === 'ok'; } catch { online = false; }
 }
 function applySettings(s = store.getSettings()) {
@@ -37,18 +38,32 @@ async function startLocal(opts) {
 }
 
 function startOnline(mode, legion) {
-  initAudio();
-  conn ??= (() => {
-    const c = new Conn();
-    c.on('start', async d => { lastMatch = { mode: '2v2', ranked: d.ranked, local: false }; hideMenu(); game.start({ net: { conn: c, info: d } }); await showLoading({ mode: '2v2', ranked: d.ranked, players: d.players.map((p, i) => ({ ...p, me: i === d.me })) }); });
+  initAudio(); target = serverTarget(store.getSettings().serverUrl);
+  const name = profileName(), leg = legion || store.getSettings().legion || 'random';
+  const begin = async (matchConn, d) => { lastMatch = { mode: '2v2', ranked: d.ranked, local: false }; hideMenu(); game.start({ net: { conn: matchConn, info: d } }); await showLoading({ mode: '2v2', ranked: d.ranked, players: d.players.map((p, i) => ({ ...p, me: i === d.me })) }); };
+  const wireMatch = c => {
+    c.on('start', d => begin(c, d));
     c.on('s', d => { if (game.sim && game.sim.net) game.sim.apply(d.s, d.ev); });
-    c.on('end', d => { lastMatch.mmrDelta = d.delta[profileName()]; });
+    c.on('end', d => { lastMatch.mmrDelta = d.delta && d.delta[name]; });
+    c.on('close', () => { if (matchConn === c) matchConn = null; });
+  };
+  if (target.kind === 'node') { // servidor propio: una sola conexión
+    conn ??= (() => { const c = new Conn(target); wireMatch(c); c.on('close', () => { conn = null; }); return c; })();
+    return conn.connect().then(() => { conn.send({ t: 'hello', name }); conn.send({ t: 'queue', mode, legion: leg }); matchConn = conn; return true; });
+  }
+  // PartyKit: lobby (cola) + sala de partida
+  conn ??= (() => {
+    const c = new Conn(target, '/party/global');
+    c.on('profile', d => { const p = store.getProfile(); if (d.p && d.p.mmr) { p.mmr = d.p.mmr; store.saveProfile(p); } });
+    c.on('queue', d => setQueueStatus(`En cola ${d.mode === 'ranked' ? 'clasificatoria' : 'clásica'}: <b>${d.n}/4</b> jugadores · ${d.wait}s${d.fill != null ? ` · bots en ${d.fill}s` : ''}`));
+    c.on('found', d => { setQueueStatus('¡Partida encontrada!'); const m = new Conn(target, `/parties/match/${d.id}?name=${encodeURIComponent(name)}`); wireMatch(m); matchConn = m; m.connect().catch(() => { toastErr('No se pudo entrar a la partida.'); }); });
     c.on('close', () => { conn = null; });
     return c;
   })();
-  const url = store.getSettings().serverUrl; if (url) conn.url = () => url;
-  return conn.connect().then(() => { conn.send({ t: 'hello', name: profileName() }); conn.send({ t: 'queue', mode, legion: legion || store.getSettings().legion || 'random' }); return true; });
+  return conn.connect().then(() => { conn.send({ t: 'hello', name }); conn.send({ t: 'queue', mode, legion: leg }); return true; });
 }
+const toastErr = m => console.warn(m);
+let matchConn = null;
 
 async function onGameOver(win, sim) {
   const p = sim.P(game.me);
@@ -63,9 +78,9 @@ function backToMenu() { game.stop(); $('hud').classList.add('hidden'); $('end').
 async function boot() {
   ui = new UI(getPortrait); game = new Game($('c'), ui); ui.bind(game); window.__game = game;
   game.onGameOver = onGameOver;
-  ui.onQuit = fromEnd => { if (game.sim && !game.over && !fromEnd) { if (!confirm(game.local ? '¿Abandonar la partida?' : '¿Rendirse y salir de la partida?')) return; if (!game.local && conn) conn.send({ t: 'surrender' }); } backToMenu(); };
+  ui.onQuit = fromEnd => { if (game.sim && !game.over && !fromEnd) { if (!confirm(game.local ? '¿Abandonar la partida?' : '¿Rendirse y salir de la partida?')) return; if (!game.local) (matchConn || conn)?.send({ t: 'surrender' }); } backToMenu(); };
   await probeServer();
-  mountMenu({ startLocal, startOnline, onlineAvailable: () => online, applySettings: s => applySettings(s) });
+  mountMenu({ startLocal, startOnline, cancelQueue: () => { conn && conn.send({ t: 'leave' }); }, onlineAvailable: () => online, applySettings: s => applySettings(s) });
   applySettings();
   $('boot').remove();
   if (params.get('auto')) startLocal({ lanes: +params.get('lanes') || 2, diff: params.get('diff') || 'normal', legion: params.get('legion') || 'random' });

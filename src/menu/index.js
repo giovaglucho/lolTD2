@@ -8,12 +8,13 @@ import { rankOf, esc, fmt } from './data.js';
 import { UI } from './icons.js';
 import { stageStart, stageStop, stageMode, viewerClear } from './stage.js';
 import { viewMain } from './views/main.js';
-import { viewSolo, viewMulti } from './views/play.js';
+import { viewSolo, viewMulti, setQueueStatus } from './views/play.js';
 import { viewGuides, viewPatch, viewSettings } from './views/info.js';
 import { viewProfile, viewRanking, viewShop, viewGuild } from './views/social.js';
 import { viewCodex } from './views/codex.js';
 import { runLoading, runResult } from './views/screens.js';
 export { store } from './store.js';
+export { setQueueStatus };
 
 const VIEWS = { main: viewMain, solo: viewSolo, multi: viewMulti, guides: viewGuides, profile: viewProfile, ranking: viewRanking, shop: viewShop, guild: viewGuild, patch: viewPatch, settings: viewSettings, codex: viewCodex };
 let root = null, viewEl = null, current = 'main', cleanup = null;
