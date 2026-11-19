@@ -39,3 +39,18 @@ Controles: clic colocar/seleccionar · U mejorar · X / clic der. vender · 1-9,
 - `src/models.js` modelos procedurales, `src/world.js` escenario, `src/fx.js` efectos, `src/game.js` render/entrada, `src/ui.js` HUD y menús.
 
 Limitaciones del MVP: identidad por nombre (sin cuentas), un único servidor en memoria, sin reconexión a la misma partida, una sola "legión" de campeones (sin elegir facción).
+
+## Multijugador en línea (Cloudflare + PartyServer, para Vercel)
+Vercel solo sirve la web; el 2v2 en línea corre en un **Worker de Cloudflare con Durable Objects** usando [PartyServer](https://github.com/cloudflare/partykit/tree/main/packages/partyserver) (el sucesor de PartyKit, cuya plataforma alojada cerró el 23-oct-2026). El plan gratis de Workers lo incluye.
+- `cloudflare/lobby.js` — cola Clásico/Ranked, perfiles, MMR Elo y clasificación (`/parties/lobby/global`).
+- `cloudflare/match.js` — una partida autoritativa por sala (`/parties/match/<id>`), con la misma simulación `src/sim.js`.
+- `wrangler.jsonc` — configuración.
+
+```bash
+npm run cf:dev                          # servidor local en 127.0.0.1:1999
+# en otra terminal: npm run dev, y en Ajustes → "URL de servidor propio" escribe 127.0.0.1:1999
+npx wrangler login && npm run cf:deploy # publica → rift-legion.<subdominio>.workers.dev
+VITE_SERVER_HOST=rift-legion.<subdominio>.workers.dev npm run build   # la web ya apunta a ese servidor
+HOST=rift-legion.<subdominio>.workers.dev node tools/cftest.mjs ranked  # prueba con 4 clientes simulados
+```
+Sin `VITE_SERVER_HOST` el menú muestra "Servidores próximamente" (o usa la URL de Ajustes / `npm start`).

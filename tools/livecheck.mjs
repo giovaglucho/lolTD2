@@ -1,0 +1,10 @@
+import { chromium } from 'file:///opt/node22/lib/node_modules/playwright/index.mjs';
+const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const p = await b.newPage({ viewport: { width: 1600, height: 900 } }); const errs = [];
+p.on('pageerror', e => errs.push('PAGEERR ' + e.message)); p.on('console', m => m.type() === 'error' && errs.push('ERR ' + m.text()));
+await p.goto('https://rift-legion-td.vercel.app/?q=low'); await p.waitForTimeout(10000);
+await p.evaluate(() => document.querySelector('[data-go=multi]').click()); await p.waitForTimeout(3000);
+await p.evaluate(() => document.querySelector('[data-q=classic]').click()); await p.waitForTimeout(6000);
+await p.screenshot({ path: '/tmp/claude-0/shots/live_cola.png', timeout: 120000 });
+console.log(await p.evaluate(() => document.querySelector('#mqstat')?.textContent), '| errores:', errs.join(' | ') || 'ninguno');
+await b.close();

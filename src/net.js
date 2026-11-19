@@ -2,15 +2,28 @@
 import { Sim, FBY, MBY } from './sim.js';
 import { CREEPS, GRID, CFG } from './data.js';
 
+// Destino del servidor multijugador:
+//  · Cloudflare (PartyServer), para Vercel: host "rift-legion.<subdominio>.workers.dev" (VITE_SERVER_HOST o Ajustes) → /parties/lobby/global y /parties/match/<id>
+//  · servidor propio Node (`npm start`): mismo origen, ruta /ws
+export const PARTYKIT_HOST = (import.meta.env && (import.meta.env.VITE_SERVER_HOST || import.meta.env.VITE_PARTYKIT_HOST)) || '';
+export function serverTarget(setting) {
+  const h = (setting || PARTYKIT_HOST || '').trim().replace(/^(wss?|https?):\/\//, '').replace(/\/.*$/, '');
+  return h ? { kind: 'partykit', host: h, scheme: /^(localhost|127\.|192\.|10\.)/.test(h) ? 'ws' : 'wss' } : { kind: 'node' };
+}
 export class Conn {
-  constructor() { this.ws = null; this.handlers = {}; this.open = false; }
-  url() { const q = new URLSearchParams(location.search).get('server'); if (q) return q; return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws'; }
+  constructor(target = { kind: 'node' }, path = '') { this.target = target; this.path = path; this.ws = null; this.handlers = {}; this.open = false; }
+  url() {
+    const t = this.target;
+    if (t.kind === 'partykit') return `${t.scheme}://${t.host}${this.path || '/parties/lobby/global'}`;
+    const q = new URLSearchParams(location.search).get('server'); if (q) return q;
+    return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+  }
   connect() {
     if (this.ws && this.open) return Promise.resolve();
     return new Promise((res, rej) => {
-      const ws = new WebSocket(this.url()); this.ws = ws;
-      ws.onopen = () => { this.open = true; res(); };
-      ws.onerror = () => { this.open = false; rej(new Error('No se pudo conectar al servidor')); };
+      const ws = new WebSocket(this.url()); this.ws = ws; const to = setTimeout(() => { try { ws.close(); } catch {} rej(new Error('timeout')); }, 20000);
+      ws.onopen = () => { clearTimeout(to); this.open = true; res(); };
+      ws.onerror = () => { clearTimeout(to); this.open = false; rej(new Error('No se pudo conectar al servidor')); };
       ws.onclose = () => { this.open = false; this.emit('close', {}); };
       ws.onmessage = m => { let d; try { d = JSON.parse(m.data); } catch { return; } this.emit(d.t, d); };
     });
@@ -18,6 +31,7 @@ export class Conn {
   on(t, fn) { this.handlers[t] = fn; }
   emit(t, d) { const h = this.handlers[t]; if (h) h(d); }
   send(o) { if (this.ws && this.open) this.ws.send(JSON.stringify(o)); }
+  close() { try { this.ws && this.ws.close(); } catch {} }
 }
 
 // Espejo local del estado autoritativo del servidor; expone la misma API que Sim.
@@ -28,7 +42,7 @@ export class NetSim {
     this.phase = 'build'; this.timer = CFG.buildTime; this.wave = 0; this.over = null; this.ready = false;
     // estado inicial hasta recibir la primera instantánea
     this.teams = [0, 1].map(t => ({ t, hp: 1, max: 1, upg: { hp: 0, atk: 0, regen: 0 } }));
-    this.players = info.players.map((p, i) => ({ side: i, team: p.team, name: p.name, bot: p.bot, gold: 0, myth: 0, income: 0, workers: 0, ready: false, kills: 0, queue: [], grid: new Array(GRID.cols * GRID.rows).fill(null), nexus: { isNexus: true, x: 0, z: 28, lane: i } }));
+    this.players = info.players.map((p, i) => ({ side: i, team: p.team, name: p.name, bot: p.bot, legion: p.legion, roll: [], spellOffer: null, spell: null, sellRate: .5, piggy: 0, rerolls: 0, strategy: null, dealt: 0, gold: 0, myth: 0, income: 0, workers: 0, ready: false, kills: 0, queue: [], grid: new Array(GRID.cols * GRID.rows).fill(null), nexus: { isNexus: true, x: 0, z: 28, lane: i } }));
   }
   apply(s, evs) {
     this.n = s.n; this.phase = s.ph; this.timer = s.tm; this.wave = s.wv; this.over = s.ov; this.teams = s.teams;

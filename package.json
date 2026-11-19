@@ -10,11 +10,18 @@
     "preview": "vite preview --host",
     "sim": "node tools/sim.mjs",
     "server": "node server/server.js",
-    "start": "vite build && node server/server.js"
+    "start": "vite build && node server/server.js",
+    "cf:dev": "wrangler dev --port 1999",
+    "cf:deploy": "wrangler deploy"
   },
   "dependencies": {
+    "partyserver": "^0.5.10",
     "three": "^0.187.0",
     "vite": "^8.0.0",
     "ws": "^8.23.0"
+  },
+  "devDependencies": {
+    "https-proxy-agent": "^9.1.0",
+    "wrangler": "^4.163.0"
   }
 }

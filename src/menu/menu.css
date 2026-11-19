@@ -570,3 +570,5 @@
   .m-nav { top: 140px; } .m-nav .it { font-size: 21px; } .m-nav .it.big { font-size: 50px; } .m-tourney { height: 96px; width: 420px; }
   .m-leg { height: 176px; } .ld-team { top: 110px; } .ld-card .pt { width: 66px; height: 66px; }
 }
+.m-mqbar { display:flex; align-items:center; gap:14px; margin:0 0 14px; } .m-mqbar label { font:600 14px var(--cond); letter-spacing:2px; text-transform:uppercase; color:var(--gold2); } .m-mqbar select { min-width:230px; }
+.m-mqstat { font-size:15px; color:#ffd870; } .m-mqstat b { color:#fff; }

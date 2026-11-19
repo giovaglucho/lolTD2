@@ -1,6 +1,6 @@
 // SOLO Y COOPERATIVO + MULTIJUGADOR
 import { ctx, h, click, toast, pimg, hydrate, crest, iconTile } from '../ui.js';
-import { getProfile, getSettings } from '../store.js';
+import { getProfile, getSettings, saveSettings } from '../store.js';
 import { legionList, champsOf, allChamps, hex, esc, MASTERMIND, STRATEGIES, DIFF_LIST, rankOf } from '../data.js';
 import { emblem, glyph, UI } from '../icons.js';
 
@@ -82,11 +82,14 @@ export function viewSolo(el, opts = {}) {
   refresh();
 }
 
+// Estado de la cola (lo actualiza main.js con los mensajes del lobby)
+export function setQueueStatus(html) { const el = document.getElementById('mqstat'); if (el) el.innerHTML = html ? `${html}${/Conectando|cola/i.test(html) ? ' <button class="m-btn" id="mqCancel" style="padding:2px 12px;font-size:13px">Cancelar</button>' : ''}` : ''; }
 export function viewMulti(el) {
   const p = getProfile(), rk = rankOf(p.mmr || 1200), online = !!(ctx.api.onlineAvailable && ctx.api.onlineAvailable());
   const srv = getSettings().serverUrl;
   el.appendChild(h(`<div class="m-page">
     <div class="m-ptitle"><h1>Multijugador</h1><span class="sub">Partidas 2 contra 2 con otros invocadores.</span></div>
+    <div class="m-mqbar"><label>Tu legión</label><select class="m-in" id="mqLegion"><option value="random">Aleatoria</option><option value="invocador">Invocador (Mente maestra)</option>${legionList().map(l => `<option value="${l.id}">${esc(l.name)}</option>`).join('')}</select><div id="mqstat" class="m-mqstat"></div></div>
     <div class="m-queues">
       <div class="m-panel m-queue">${emblem('demacia', '#c8aa6e').replace('class="emb"', 'class="emb bgemb"')}
         <div class="m-kicker">Partida normal</div><h2>Clásico 2v2</h2>
@@ -101,11 +104,13 @@ export function viewMulti(el) {
       </div>
     </div>
     ${online ? `<div class="m-offline" style="border-color:rgba(95,211,90,.4);background:linear-gradient(90deg,rgba(95,211,90,.12),transparent)"><div class="pulse" style="background:#5fd35a"></div><div><h4>Servidores en línea</h4><p>Conectado${srv ? ' a ' + esc(srv) : ''}. ¡Buena suerte en la Grieta!</p></div></div>`
-      : `<div class="m-offline"><div class="pulse"></div><div style="flex:1"><h4>Servidores en línea próximamente</h4><p>Estamos preparando la infraestructura de emparejamiento. Mientras tanto, juega <b style="color:var(--gold2)">Solo y cooperativo</b> contra la IA, o conecta tu propio servidor (npm start) en Ajustes.</p></div><button class="m-btn sm" data-go="settings">Servidor propio</button><button class="m-btn sm teal" data-go="solo">Jugar contra la IA</button></div>`}
+      : `<div class="m-offline"><div class="pulse"></div><div style="flex:1"><h4>Servidores en línea próximamente</h4><p>Aún no hay servidor de emparejamiento configurado. Mientras tanto, juega <b style="color:var(--gold2)">Solo y cooperativo</b> contra la IA, o escribe la dirección de un servidor PartyKit en Ajustes.</p></div><button class="m-btn sm" data-go="settings">Servidor propio</button><button class="m-btn sm teal" data-go="solo">Jugar contra la IA</button></div>`}
   </div>`));
+  const sel = el.querySelector('#mqLegion'); sel.value = getSettings().legion || 'random'; sel.onchange = () => saveSettings({ ...getSettings(), legion: sel.value });
   el.addEventListener('click', e => {
     const q = e.target.closest('[data-q]'), g = e.target.closest('[data-go]');
-    if (q && !q.disabled) { click('horn'); try { ctx.api.startOnline(q.dataset.q); } catch (err) { console.error(err); toast('No se pudo conectar.'); } }
+    if (e.target.closest('#mqCancel')) { ctx.api.cancelQueue && ctx.api.cancelQueue(); setQueueStatus(''); return; }
+    if (q && !q.disabled) { click('horn'); setQueueStatus('Conectando…'); try { ctx.api.startOnline(q.dataset.q, sel.value).catch(() => setQueueStatus('<span style="color:#ff8a7a">No se pudo conectar al servidor. Inténtalo de nuevo.</span>')); } catch (err) { console.error(err); toast('No se pudo conectar.'); } }
     if (g) { click(); ctx.go(g.dataset.go); }
   });
 }
